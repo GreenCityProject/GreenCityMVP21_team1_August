@@ -2,6 +2,7 @@ package greencity.entity;
 
 import greencity.enums.EventType;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 import org.hibernate.annotations.Cascade;
 
@@ -22,6 +23,7 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotEmpty(message = "Event title must not be null or empty")
     @Column(name = "event_title", nullable = false)
     private String eventTitle;
 

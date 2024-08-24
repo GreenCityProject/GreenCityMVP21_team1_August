@@ -20,7 +20,8 @@ public class EventController {
     private final EventService eventService;
 
 
-    @PostMapping(path = "/create", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    @PostMapping(path = "/create",
+            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<EventDto> save(@RequestPart MultipartFile[] images,
                                          @RequestPart EventCreationDto eventCreationDto,
                                          @CurrentUser UserVO currentUser) {
