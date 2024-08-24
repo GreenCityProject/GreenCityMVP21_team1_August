@@ -11,6 +11,7 @@ import org.hibernate.annotations.JdbcType;
 import org.hibernate.type.descriptor.jdbc.IntegerJdbcType;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -161,4 +162,7 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Filter> filters = new ArrayList<>();
+
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
+    private Set<Event> events = new HashSet<>();
 }
