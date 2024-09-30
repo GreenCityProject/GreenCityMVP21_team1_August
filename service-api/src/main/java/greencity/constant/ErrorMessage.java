@@ -138,6 +138,15 @@ public final class ErrorMessage {
     public static final String EVENT_DAY_DETAILS_NOT_FOUND = "Event day details not found with id: ";
     public static final String EVENT_EDIT_DTO_ERROR = "Wrong body request format for DTO or null";
     public static final String EMAIL_CANT_BE_NULL = "Email can't be null";
+    public static final String CANNOT_MAP_NULL_TO_DTO = "Can't map null to dto";
+    public static final String CANNOT_MAP_NULL_TO_ENTITY = "Can't map null to entity";
+    public static final String NOTIFICATION_NOT_FOUND_BY_ID = "Notification not found by id: ";
+    public static final String NOTIFICATION_DTO_CANNOT_BE_NULL = "NotificationDto can't be null";
+    public static final String NOTIFICATION_SECTION_CANNOT_BE_NULL_OR_EMPTY = "Notification section can't be null or empty";
+    public static final String NOTIFICATION_SECTION_TYPE_CANNOT_BE_NULL_OR_EMPTY = "Notification section type can't be null or empty";
+    public static final String NOTIFICATION_TEXT_CANNOT_BE_NULL_OR_EMPTY = "Notification text can't be null or empty";
+    public static final String USER_ID_CANNOT_BE_NULL = "User id can't be null";
+    public static final String NOTIFICATION_ALREADY_READ = "Notification already read";
 
 
     private ErrorMessage() {

@@ -179,6 +179,6 @@
     <include file="db/changelog/logs/ch-event-Chernenko.xml"/>
     <include file="db/changelog/logs/ch-event-vulook.xml"/>
     <include file="db/changelog/logs/ch-event-comment-Vavrushchak.xml"/>
-    <include file="db/changelog/logs/30-01-changelog.xml"/>
+    <include file="/db/changelog/logs/ch-notification.xml"/>
 </databaseChangeLog>
 
