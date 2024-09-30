@@ -137,6 +137,8 @@ public final class ErrorMessage {
     public static final String EVENT_NOT_FOUND = "Event not found with id: ";
     public static final String EVENT_DAY_DETAILS_NOT_FOUND = "Event day details not found with id: ";
     public static final String EVENT_EDIT_DTO_ERROR = "Wrong body request format for DTO or null";
+    public static final String EMAIL_CANT_BE_NULL = "Email can't be null";
+
 
     private ErrorMessage() {
     }

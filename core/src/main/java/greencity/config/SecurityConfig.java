@@ -159,7 +159,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST,
                                 "/ownSecurity/signUp",
                                 "/ownSecurity/signIn",
-                                "/ownSecurity/changePassword")
+                                "/ownSecurity/changePassword",
+                                "/newsletter-subscribers/subscribe")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET,
                         "/events/comments/{eventId}/count")
