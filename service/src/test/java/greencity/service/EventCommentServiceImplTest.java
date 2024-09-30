@@ -81,11 +81,11 @@ public class EventCommentServiceImplTest {
         event.setAuthor(user);
 
         eventComment = EventComment.builder()
-                .text("Comment text")
-                .user(user)
+                .content("Comment text")
+                .author(user)
                 .event(event)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdDate(LocalDateTime.now())
+                .updatedDate(LocalDateTime.now())
                 .build();
 
         responseDto = new AddEventCommentDtoResponse();
@@ -178,7 +178,7 @@ public class EventCommentServiceImplTest {
     @Test
     public void getCommentsByEventId() {
         when(eventRepo.existsById(eventId)).thenReturn(true);
-        when(eventCommentRepo.findByEventIdOrderByCreatedAtDesc(eventId))
+        when(eventCommentRepo.findByEventIdOrderByCreatedDateDesc(eventId))
                 .thenReturn(Collections.singletonList(eventComment));
 
         List<AddEventCommentDtoResponse> result = eventCommentServiceImpl.getCommentsByEventId(eventId);
@@ -187,7 +187,7 @@ public class EventCommentServiceImplTest {
         assertEquals(1, result.size());
         assertEquals("Comment text", result.get(0).getText());
         verify(eventRepo, times(1)).existsById(eventId);
-        verify(eventCommentRepo, times(1)).findByEventIdOrderByCreatedAtDesc(eventId);
+        verify(eventCommentRepo, times(1)).findByEventIdOrderByCreatedDateDesc(eventId);
     }
 
     @Test
@@ -199,7 +199,7 @@ public class EventCommentServiceImplTest {
         });
 
         verify(eventRepo, times(1)).existsById(eventId);
-        verify(eventCommentRepo, times(0)).findByEventIdOrderByCreatedAtDesc(eventId);
+        verify(eventCommentRepo, times(0)).findByEventIdOrderByCreatedDateDesc(eventId);
     }
 
     @Test

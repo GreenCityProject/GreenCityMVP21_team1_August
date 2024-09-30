@@ -10,37 +10,44 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-@Entity
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @Table(name = "event_comment")
 @EntityListeners(AuditingEntityListener.class)
+@Entity
 public class EventComment {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
     @Size(min = 1, max = 8000)
-    private String text;
+    private String content;
 
     @CreatedDate
     @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime createdDate;
 
     @LastModifiedDate
     @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    private LocalDateTime updatedDate;
 
     @ManyToOne
-    private User user;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User author;
 
     @ManyToOne
     private Event event;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_comment_id")
+    private EventComment parentComment;
 
     @ManyToMany
     @JoinTable(
@@ -50,10 +57,20 @@ public class EventComment {
     )
     List<User> mentionedUsers = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_comment_id")
-    private EventComment parentComment;
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean isEdited = false;
 
-    @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL)
-    private List<EventComment> replies = new ArrayList<>();
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        EventComment that = (EventComment) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }

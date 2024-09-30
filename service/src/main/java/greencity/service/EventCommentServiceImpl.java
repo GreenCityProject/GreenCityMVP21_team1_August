@@ -66,12 +66,12 @@ public class EventCommentServiceImpl implements EventCommentService {
         User currentUser = modelMapper.map(currentUserVO, User.class);
 
         EventComment comment = EventComment.builder()
-                .text(filteredText)
-                .user(currentUser)
+                .content(filteredText)
+                .author(currentUser)
                 .event(event)
                 .mentionedUsers(getMentionedUsers(commentDto.getText()))
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdDate(LocalDateTime.now())
+                .createdDate(LocalDateTime.now())
                 .build();
 
         EventComment savedComment = eventCommentRepo.save(comment);
@@ -81,10 +81,10 @@ public class EventCommentServiceImpl implements EventCommentService {
 
         AddEventCommentDtoResponse responseDto = modelMapper.map(savedComment, AddEventCommentDtoResponse.class);
         responseDto.setEventId(savedComment.getEvent().getId());
-        responseDto.setUserId(savedComment.getUser().getId());
-        responseDto.setUserName(savedComment.getUser().getName());
-        responseDto.setCreatedDate(savedComment.getCreatedAt());
-        responseDto.setModifiedDate(savedComment.getUpdatedAt());
+        responseDto.setUserId(savedComment.getAuthor().getId());
+        responseDto.setUserName(savedComment.getAuthor().getName());
+        responseDto.setCreatedDate(savedComment.getCreatedDate());
+        responseDto.setModifiedDate(savedComment.getUpdatedDate());
 
         return responseDto;
     }
@@ -94,11 +94,11 @@ public class EventCommentServiceImpl implements EventCommentService {
         if (!eventRepo.existsById(eventId)) {
             throw new EventNotFoundException("Event not found");
         }
-        List<EventComment> comments = eventCommentRepo.findByEventIdOrderByCreatedAtDesc(eventId);
+        List<EventComment> comments = eventCommentRepo.findByEventIdOrderByCreatedDateDesc(eventId);
 
         return comments.stream().map(comment -> AddEventCommentDtoResponse.builder()
                 .id(comment.getId())
-                .text(comment.getText())
+                .text(comment.getContent())
                 .build()
         ).collect(Collectors.toList());
     }
@@ -118,10 +118,10 @@ public class EventCommentServiceImpl implements EventCommentService {
 
         AddEventCommentDtoResponse responseDto = modelMapper.map(comment, AddEventCommentDtoResponse.class);
         responseDto.setEventId(comment.getEvent().getId());
-        responseDto.setUserId(comment.getUser().getId());
-        responseDto.setUserName(comment.getUser().getName());
-        responseDto.setCreatedDate(comment.getCreatedAt());
-        responseDto.setModifiedDate(comment.getUpdatedAt());
+        responseDto.setUserId(comment.getAuthor().getId());
+        responseDto.setUserName(comment.getAuthor().getName());
+        responseDto.setCreatedDate(comment.getCreatedDate());
+        responseDto.setModifiedDate(comment.getUpdatedDate());
 
         return responseDto;
     }
@@ -132,7 +132,7 @@ public class EventCommentServiceImpl implements EventCommentService {
             throw new EventNotFoundException("Event not found with id: " + eventId);
         } else {
             if(!eventCommentRepo.existsById(commentId) || !Objects.equals(currentUserVO.getId(),
-                    eventCommentRepo.findById(commentId).get().getUser().getId())) {
+                    eventCommentRepo.findById(commentId).get().getAuthor().getId())) {
                 throw new EventCommentNotFoundException("Comment not found with id: " + commentId + " or user is not author of comment");
             } else {
                 eventCommentRepo.deleteById(commentId);
@@ -147,11 +147,11 @@ public class EventCommentServiceImpl implements EventCommentService {
 
         EventCommentSendEmailDto commentNotificationDto = EventCommentSendEmailDto.builder()
                 .eventTitle(event.getEventTitle())
-                .commentText(eventComment.getText())
-                .commentAuthor(eventComment.getUser().getName())
+                .commentText(eventComment.getContent())
+                .commentAuthor(eventComment.getAuthor().getName())
                 .author(placeAuthorDto)
                 .secureToken(accessToken)
-                .commentDate(eventComment.getCreatedAt().toString())
+                .commentDate(eventComment.getCreatedDate().toString())
                 .commentId(eventComment.getId())
                 .eventId(event.getId())
                 .build();
