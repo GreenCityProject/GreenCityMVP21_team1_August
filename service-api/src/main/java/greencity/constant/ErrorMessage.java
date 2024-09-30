@@ -147,6 +147,8 @@ public final class ErrorMessage {
     public static final String NOTIFICATION_TEXT_CANNOT_BE_NULL_OR_EMPTY = "Notification text can't be null or empty";
     public static final String USER_ID_CANNOT_BE_NULL = "User id can't be null";
     public static final String NOTIFICATION_ALREADY_READ = "Notification already read";
+    public static final String COMMENT_NOT_FOUND_BY_ID = "Comment not found by id: ";
+    public static final String INVALID_COMMENT_ID = "Invalid comment id";
 
 
     private ErrorMessage() {

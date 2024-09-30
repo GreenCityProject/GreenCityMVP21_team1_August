@@ -3,9 +3,12 @@ package greencity.controller;
 import greencity.annotations.CurrentUser;
 import greencity.constant.AppConstant;
 import greencity.constant.HttpStatuses;
+import greencity.dto.comment.CommentReturnDto;
 import greencity.dto.econewscomment.AddEcoNewsCommentDtoResponse;
 import greencity.dto.event.AddEventCommentDtoRequest;
 import greencity.dto.event.AddEventCommentDtoResponse;
+import greencity.dto.eventcomment.EventCommentDtoRequest;
+import greencity.dto.eventcomment.EventCommentDtoResponse;
 import greencity.dto.user.UserVO;
 import greencity.exception.handler.MessageResponse;
 import greencity.service.EventCommentService;
@@ -18,6 +21,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -31,7 +36,7 @@ import java.util.List;
 @Validated
 public class EventCommentController {
     private final EventCommentService eventCommentService;
-
+    private static final Logger logger = LoggerFactory.getLogger(EventCommentController.class);
     /**
      * Add a new comment to the event.
      *
@@ -113,6 +118,53 @@ public class EventCommentController {
         return ResponseEntity.ok(eventCommentService.showQuantityOfAddedComments(eventId));
     }
 
+    @Operation(summary = "Update reply to comment")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK,
+                    content = @Content(schema = @Schema(implementation = CommentReturnDto.class))),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+            @ApiResponse(responseCode = "403", description = HttpStatuses.FORBIDDEN)
+    })
+    @PatchMapping("/reply/{commentId}")
+    public ResponseEntity<EventCommentDtoResponse> updateReply(@PathVariable("eventId") Long eventId,
+                                                               @PathVariable Long commentId,
+                                                               @Valid @RequestBody EventCommentDtoRequest commentDtoRequest,
+                                                               @Parameter(hidden = true) @CurrentUser UserVO currentUser) {
+        logger.info("Updating comment with id: {} by authorId: {}", commentId, currentUser.getId());
+        EventCommentDtoResponse updatedComment = this.eventCommentService.updateReply(commentDtoRequest, commentId, currentUser.getId());
+        return ResponseEntity.status(HttpStatus.OK).body(updatedComment);
+    }
+
+    @Operation(summary = "Delete reply to comment")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+            @ApiResponse(responseCode = "403", description = HttpStatuses.FORBIDDEN)
+    })
+    @DeleteMapping("/reply/{commentId}")
+    public void deleteReply(@PathVariable("eventId") Long eventId,
+                            @PathVariable Long commentId,
+                            @Parameter(hidden = true) @CurrentUser UserVO currentUser) {
+        logger.info("Deleting comment with id: {} by authorId: {}", commentId, currentUser.getId());
+        this.eventCommentService.deleteReplyById(commentId, currentUser.getId());
+    }
+
+    @Operation(summary = "Get all replies to comment")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = HttpStatuses.OK,
+                    content = @Content(schema = @Schema(implementation = EventCommentDtoResponse.class))),
+            @ApiResponse(responseCode = "400", description = HttpStatuses.BAD_REQUEST),
+            @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED),
+            @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
+    })
+    @GetMapping("/allReplies/{commentId}")
+    public ResponseEntity<List<EventCommentDtoResponse>> getAllReply(@PathVariable("eventId") Long eventId,
+                                                                     @PathVariable Long commentId) {
+        logger.info("Finding all replies to comment with id: {}", commentId);
+        return ResponseEntity.status(HttpStatus.OK).body(this.eventCommentService.findAllReplyByCommentId(commentId));
+    }
+
 
     @Operation(summary = "Delete comment.")
     @ApiResponses(value = {
@@ -124,7 +176,7 @@ public class EventCommentController {
     public ResponseEntity<Object> deleteComment(@PathVariable Long eventId,
                                                 @PathVariable Long commentId,
                                                 @Parameter(hidden = true) @CurrentUser UserVO currentUserVO
-                                                ) {
+    ) {
         eventCommentService.deleteCommentById(eventId, commentId, currentUserVO);
         return ResponseEntity.status(HttpStatus.OK).body(MessageResponse.builder()
                 .message(AppConstant.DELETED).success(true).build());

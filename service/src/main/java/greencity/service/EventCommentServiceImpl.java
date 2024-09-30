@@ -1,24 +1,32 @@
 package greencity.service;
 
 import greencity.client.RestClient;
+import greencity.constant.ErrorMessage;
 import greencity.dto.event.AddEventCommentDtoRequest;
 import greencity.dto.event.AddEventCommentDtoResponse;
 import greencity.dto.event.EventCommentSendEmailDto;
+import greencity.dto.eventcomment.EventCommentDtoRequest;
+import greencity.dto.eventcomment.EventCommentDtoResponse;
 import greencity.dto.user.PlaceAuthorDto;
 import greencity.dto.user.UserVO;
 import greencity.entity.Event;
 import greencity.entity.EventComment;
 import greencity.entity.User;
-import greencity.exception.exceptions.EventCommentNotFoundException;
-import greencity.exception.exceptions.EventNotFoundException;
+import greencity.exception.exceptions.*;
+import greencity.mapping.EventCommentDtoRequestMapper;
+import greencity.mapping.EventCommentResponseMapper;
 import greencity.repository.EventCommentRepo;
 import greencity.repository.EventRepo;
 import greencity.repository.UserRepo;
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -43,13 +51,40 @@ public class EventCommentServiceImpl implements EventCommentService {
     private final UserRepo userRepo;
     private final HttpServletRequest httpServletRequest;
     private final RestClient restClient;
+    private final EmailService emailService;
     private ModelMapper modelMapper;
+    private final EventCommentDtoRequestMapper requestMapper;
+    private final EventCommentResponseMapper responseMapper;
+    private static final Logger logger = LoggerFactory.getLogger(EventCommentServiceImpl.class.getName());
 
     static Map<String, String[]> words = new HashMap<>();
     static int largestWordLength = 0;
 
     static {
         loadConfigs();
+    }
+
+    @Override
+    public EventCommentDtoResponse saveReply(EventCommentDtoRequest commentDtoRequest, Long commentId, Long authorId, Long eventId) {
+        EventComment parentComment = this.eventCommentRepo.findById(commentId)
+                .orElseThrow(() -> new CommentNotFoundException(ErrorMessage.COMMENT_NOT_FOUND_BY_ID + commentId));
+        User user = this.userRepo.findById(authorId)
+                .orElseThrow(() -> new UserNotFoundException(ErrorMessage.USER_NOT_FOUND_BY_ID + authorId));
+        EventComment comment = this.requestMapper.toEntity(commentDtoRequest);
+        comment.setAuthor(user);
+        comment.setEvent(this.eventRepo.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException("ErrorMessage.EVENT_NOT_FOUND_BY_ID + eventId")));
+        comment.setParentComment(parentComment);
+
+        EventComment savedComment = this.eventCommentRepo.save(comment);
+
+        try {
+            sendReplyNotification(parentComment, savedComment);
+        } catch (MessagingException e) {
+            logger.error("Failed to send email notification", e);
+        }
+
+        return this.responseMapper.toDto(savedComment);
     }
 
     @Override
@@ -87,6 +122,18 @@ public class EventCommentServiceImpl implements EventCommentService {
         responseDto.setModifiedDate(savedComment.getUpdatedDate());
 
         return responseDto;
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN') or @eventCommentServiceImpl.isOwner(#replyToCommentId, #authorId)")
+    public EventCommentDtoResponse updateReply(EventCommentDtoRequest commentDtoRequest, Long replyToCommentId, Long authorId) {
+        EventComment existingComment = this.eventCommentRepo.findById(replyToCommentId)
+                .orElseThrow(() -> new CommentNotFoundException(ErrorMessage.COMMENT_NOT_FOUND_BY_ID + replyToCommentId));
+
+        existingComment.setContent(commentDtoRequest.getText());
+        existingComment.setIsEdited(true);
+        EventComment updatedComment = this.eventCommentRepo.save(existingComment);
+        return this.responseMapper.toDto(updatedComment);
     }
 
     @Override
@@ -140,82 +187,54 @@ public class EventCommentServiceImpl implements EventCommentService {
         }
     }
 
-    private void sendNotificationToOrganizer(Event event, EventComment eventComment) {
-        String accessToken = httpServletRequest.getHeader(AUTHORIZATION);
+    @Override
+    public String filterText(String input, String userName) {
+        ArrayList<String> badWords = badWordsFound(input);
 
-        PlaceAuthorDto placeAuthorDto = modelMapper.map(event.getAuthor(), PlaceAuthorDto.class);
-
-        EventCommentSendEmailDto commentNotificationDto = EventCommentSendEmailDto.builder()
-                .eventTitle(event.getEventTitle())
-                .commentText(eventComment.getContent())
-                .commentAuthor(eventComment.getAuthor().getName())
-                .author(placeAuthorDto)
-                .secureToken(accessToken)
-                .commentDate(eventComment.getCreatedDate().toString())
-                .commentId(eventComment.getId())
-                .eventId(event.getId())
-                .build();
-
-        restClient.sendEventCommentNotification(commentNotificationDto);
+        if (!badWords.isEmpty()) {
+            return "This comment were blocked because you were using swear words";
+        }
+        return input;
     }
 
-    private List<User> getMentionedUsers(String text) {
-        List<User> mentionedUsers = new ArrayList<>();
-        StringBuilder invalidMentions = new StringBuilder();
-
-        Pattern mentionPattern = Pattern.compile("@([A-Za-z0-9_]+)");
-        Matcher matcher = mentionPattern.matcher(text);
-
-        while (matcher.find()) {
-            String userName = matcher.group(1);
-
-            Optional<User> mentionedUser = userRepo.findByName(userName);
-
-            if (mentionedUser.isPresent()) {
-                mentionedUsers.add(mentionedUser.get());
-            } else {
-                invalidMentions.append("@").append(userName).append(" ");
-            }
-        }
-        if (!invalidMentions.isEmpty()) {
-            throw new IllegalArgumentException("Can't find user with name: "
-                    + invalidMentions.toString().trim());
-        }
-        return mentionedUsers;
+    @Override
+    @PreAuthorize("hasRole('ADMIN') or @eventCommentServiceImpl.isOwner(#replyToCommentId, #authorId)")
+    public void deleteReplyById(Long replyToCommentId, Long authorId) {
+        EventComment comment = this.eventCommentRepo.findById(replyToCommentId)
+                .orElseThrow(() -> new CommentNotFoundException(ErrorMessage.COMMENT_NOT_FOUND_BY_ID + replyToCommentId));
+        this.eventCommentRepo.deleteById(replyToCommentId);
     }
 
-    private static void loadConfigs() {
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new URL("https://docs.google.com/spreadsheets/d/1hIEi2YG3ydav1E06Bzf2mQbGZ12kh2fe4ISgLg_UBuM/export?format=csv").openConnection().getInputStream()));
-            String line = "";
-            int counter = 0;
-            while ((line = reader.readLine()) != null) {
-                counter++;
-                String[] content = null;
-                try {
-                    content = line.split(",");
-                    if (content.length == 0) {
-                        continue;
-                    }
-                    String word = content[0];
-                    String[] ignore_in_combination_with_words = new String[]{};
-                    if (content.length > 1) {
-                        ignore_in_combination_with_words = content[1].split("_");
-                    }
-
-                    if (word.length() > largestWordLength) {
-                        largestWordLength = word.length();
-                    }
-                    words.put(word.replaceAll(" ", ""), ignore_in_combination_with_words);
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            System.out.println("Loaded " + counter + " words to filter out");
-        } catch (IOException e) {
-            e.printStackTrace();
+    @Override
+    public List<EventCommentDtoResponse> findAllReplyByCommentId(Long commentId) {
+        logger.info("Finding all replies to comment with id: {}", commentId);
+        if (commentId == null || commentId < 0) {
+            throw new InvalidCommentIdException(ErrorMessage.INVALID_COMMENT_ID + commentId);
         }
+        EventComment comment = this.eventCommentRepo.findById(commentId)
+                .orElseThrow(() -> new CommentNotFoundException(ErrorMessage.COMMENT_NOT_FOUND_BY_ID + commentId));
+        List<EventComment> replies = this.eventCommentRepo.findAllByEventCommentId(commentId);
+        return replies.stream()
+                .map(this.responseMapper::toDto)
+                .toList();
+    }
+
+    public boolean isOwner(Long commentId, Long userId) {
+        EventComment comment = this.eventCommentRepo.findById(commentId).orElse(null);
+        return comment != null && comment.getAuthor().getId().equals(userId);
+    }
+
+    private void sendReplyNotification(EventComment parentComment, EventComment replyComment) throws MessagingException {
+        String parentCommentAuthorEmail = parentComment.getAuthor().getEmail();
+        String subject = "Your comment has a new reply";
+        String content = String.format(
+                "Hello %s,<br><br>Your comment:<br>%s<br><br>has been replied by %s:<br>%s",
+                parentComment.getAuthor().getName(),
+                parentComment.getContent(),
+                replyComment.getAuthor().getName(),
+                replyComment.getContent()
+        );
+        this.emailService.sendEmail(parentCommentAuthorEmail, subject, content);
     }
 
     private static ArrayList<String> badWordsFound(String input) {
@@ -256,13 +275,81 @@ public class EventCommentServiceImpl implements EventCommentService {
         return badWords;
     }
 
-    @Override
-    public String filterText(String input, String userName) {
-        ArrayList<String> badWords = badWordsFound(input);
+    private static void loadConfigs() {
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new URL("https://docs.google.com/spreadsheets/d/1hIEi2YG3ydav1E06Bzf2mQbGZ12kh2fe4ISgLg_UBuM/export?format=csv").openConnection().getInputStream()));
+            String line = "";
+            int counter = 0;
+            while ((line = reader.readLine()) != null) {
+                counter++;
+                String[] content = null;
+                try {
+                    content = line.split(",");
+                    if (content.length == 0) {
+                        continue;
+                    }
+                    String word = content[0];
+                    String[] ignore_in_combination_with_words = new String[]{};
+                    if (content.length > 1) {
+                        ignore_in_combination_with_words = content[1].split("_");
+                    }
 
-        if (!badWords.isEmpty()) {
-            return "This comment were blocked because you were using swear words";
+                    if (word.length() > largestWordLength) {
+                        largestWordLength = word.length();
+                    }
+                    words.put(word.replaceAll(" ", ""), ignore_in_combination_with_words);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            System.out.println("Loaded " + counter + " words to filter out");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        return input;
+    }
+
+    private List<User> getMentionedUsers(String text) {
+        List<User> mentionedUsers = new ArrayList<>();
+        StringBuilder invalidMentions = new StringBuilder();
+
+        Pattern mentionPattern = Pattern.compile("@([A-Za-z0-9_]+)");
+        Matcher matcher = mentionPattern.matcher(text);
+
+        while (matcher.find()) {
+            String userName = matcher.group(1);
+
+            Optional<User> mentionedUser = userRepo.findByName(userName);
+
+            if (mentionedUser.isPresent()) {
+                mentionedUsers.add(mentionedUser.get());
+            } else {
+                invalidMentions.append("@").append(userName).append(" ");
+            }
+        }
+        if (!invalidMentions.isEmpty()) {
+            throw new IllegalArgumentException("Can't find user with name: "
+                    + invalidMentions.toString().trim());
+        }
+        return mentionedUsers;
+    }
+
+    private void sendNotificationToOrganizer(Event event, EventComment eventComment) {
+        String accessToken = httpServletRequest.getHeader(AUTHORIZATION);
+
+        PlaceAuthorDto placeAuthorDto = modelMapper.map(event.getAuthor(), PlaceAuthorDto.class);
+
+        EventCommentSendEmailDto commentNotificationDto = EventCommentSendEmailDto.builder()
+                .eventTitle(event.getEventTitle())
+                .commentText(eventComment.getContent())
+                .commentAuthor(eventComment.getAuthor().getName())
+                .author(placeAuthorDto)
+                .secureToken(accessToken)
+                .commentDate(eventComment.getCreatedDate().toString())
+                .commentId(eventComment.getId())
+                .eventId(event.getId())
+                .build();
+
+        restClient.sendEventCommentNotification(commentNotificationDto);
     }
 }
