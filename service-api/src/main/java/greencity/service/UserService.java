@@ -1,10 +1,12 @@
 package greencity.service;
 
+import greencity.dto.PageableAdvancedDto;
 import greencity.dto.PageableDto;
 import greencity.dto.user.UserManagementVO;
 import greencity.dto.user.UserRoleDto;
 import greencity.dto.user.UserStatusDto;
 import greencity.dto.user.UserVO;
+import greencity.dto.user.friends.FriendCardDtoResponse;
 import greencity.enums.Role;
 import greencity.enums.UserStatus;
 import org.springframework.data.domain.Pageable;
@@ -107,4 +109,56 @@ public interface UserService {
      * @param criteria value which we used to filter users.
      */
     PageableDto<UserManagementVO> getAllUsersByCriteria(String criteria, String role, String status, Pageable pageable);
+
+    /**
+     * Method for adding new friend.
+     *
+     * @param userId The ID of user who add friend.
+     * @param friendId The ID of user who should be added as friend.
+     *
+     * @author Chernenko Vitaliy
+     */
+    void addFriend(Long userId, Long friendId);
+
+    /**
+     * Method for accepting friendship invitation.
+     *
+     * @param userId The ID of current user.
+     * @param friendId The ID of user whose invitation need to accept.
+     *
+     * @author Chernenko Vitaliy
+     */
+    void acceptFriendshipInvitation(Long userId, Long friendId);
+
+    /**
+     * Method for canceling friendship request.
+     *
+     * @param userId The ID of current user.
+     * @param friendId The ID of user request to who need to cancel.
+     *
+     * @author Chernenko Vitaliy
+     */
+    void cancelFriendshipInvitation(Long userId, Long friendId);
+
+    /**
+     * Method for declining friendship invitation.
+     *
+     * @param userId The ID of current user.
+     * @param friendId The ID of user whose invitation need to decline.
+     *
+     * @author Chernenko Vitaliy
+     */
+    void declineFriendshipInvitation(Long userId, Long friendId);
+
+    /**
+     * Method for deleting user from friends.
+     *
+     * @param userId The ID of current user.
+     * @param friendId The ID of user who has to be removed from friends.
+     *
+     * @author Chernenko Vitaliy
+     */
+    void deleteFriend(Long userId, Long friendId);
+
+    PageableAdvancedDto<FriendCardDtoResponse> getFriendshipRequests(long userId, Pageable page);
 }

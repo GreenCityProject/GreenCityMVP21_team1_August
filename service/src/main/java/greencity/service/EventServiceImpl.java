@@ -1,21 +1,16 @@
 package greencity.service;
-
 import greencity.client.RestClient;
 import greencity.constant.ErrorMessage;
-import greencity.dto.event.EventCreationDtoRequest;
-import greencity.dto.event.EventDto;
-import greencity.dto.event.EventEditDto;
-import greencity.dto.event.EventSendEmailDto;
+import greencity.dto.event.*;
 import greencity.dto.user.PlaceAuthorDto;
 import greencity.dto.user.UserVO;
-import greencity.entity.Event;
-import greencity.entity.EventDayDetails;
-import greencity.entity.EventImage;
-import greencity.entity.User;
-import greencity.exception.exceptions.EventNotFoundException;
-import greencity.exception.exceptions.NotFoundException;
-import greencity.exception.exceptions.NotSavedException;
+import greencity.entity.*;
+import greencity.enums.EventRole;
+import greencity.exception.exceptions.*;
+import greencity.filters.EventSpecification;
+import greencity.filters.SearchCriteria;
 import greencity.repository.EventDayDetailsRepo;
+import greencity.repository.EventParticipantRepo;
 import greencity.repository.EventRepo;
 import greencity.repository.UserRepo;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,6 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.modelmapper.ModelMapper;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -50,6 +47,7 @@ public class EventServiceImpl implements EventService {
     private final HttpServletRequest httpServletRequest;
     private final ModelMapper modelMapper;
     private final EventDayDetailsRepo eventDayDetailsRepo;
+    private final EventParticipantRepo eventParticipantRepo;
 
 
     @Override
@@ -86,6 +84,73 @@ public class EventServiceImpl implements EventService {
         } catch (DataIntegrityViolationException e) {
             throw new NotSavedException(ErrorMessage.EVENT_NOT_SAVED);
         }
+    }
+
+    @Override
+    @Transactional
+    public EventParticipantDto joinEvent(Long eventId, String userEmail){
+        Event event = this.eventRepo.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException(ErrorMessage.EVENT_NOT_FOUND + eventId));
+
+        User user = this.userRepo.findByEmail(userEmail)
+                .orElseThrow(() -> new NotFoundException(ErrorMessage.USER_NOT_FOUND_BY_EMAIL + userEmail));
+
+        boolean isAlreadyParticipant = this.eventParticipantRepo.findByEventAndUserId(event, user.getId()).isPresent();
+
+        if (isAlreadyParticipant) {
+            throw new EventAlreadyJoinedException(ErrorMessage.USER_ALREADY_JOINED_EVENT + event.getEventTitle());
+        }
+
+        EventParticipant eventParticipant = EventParticipant.createParticipant(event, user.getId(), EventRole.PARTICIPANT);
+        this.eventParticipantRepo.save(eventParticipant);
+
+        return this.modelMapper.map(eventParticipant, EventParticipantDto.class);
+    }
+
+    @Override
+    @Transactional
+    public EventParticipantDto leaveEvent(Long eventId, String userEmail){
+        Event event = this.eventRepo.findById(eventId)
+                .orElseThrow(() -> new EventNotFoundException(ErrorMessage.EVENT_NOT_FOUND + eventId));
+
+        User user = this.userRepo.findByEmail(userEmail)
+                .orElseThrow(() -> new NotFoundException(ErrorMessage.USER_NOT_FOUND_BY_EMAIL + userEmail));
+
+        if (event.getAuthor().getId().equals(user.getId())){
+            throw new EventCannotLeaveAuthorException(ErrorMessage.AUTHOR_CANNOT_LEAVE_EVENT + event.getEventTitle());
+        }
+
+        EventParticipant eventParticipant = this.eventParticipantRepo.findByEventAndUserId(event, user.getId())
+                .orElseThrow(() -> new NotFoundException(ErrorMessage.EVENT_NOT_FOUND + eventId));
+
+        this.eventParticipantRepo.delete(eventParticipant);
+
+        return this.modelMapper.map(eventParticipant, EventParticipantDto.class);
+    }
+
+    @Override
+    @PreAuthorize("@eventServiceImpl.isCurrentUserId(#userId)")
+    @Transactional(readOnly = true)
+    public List<EventParticipantDto> getEventsUserJoinedOrScheduled(Long userId) {
+        List<EventParticipant> eventParticipants = this.eventParticipantRepo.findAllByUserId(userId);
+
+        return eventParticipants.stream()
+                .map(eventParticipant -> this.modelMapper.map(eventParticipant, EventParticipantDto.class))
+                .toList();
+    }
+
+    @Override
+    public Set<String> getDistinctLocations(){
+        return this.eventDayDetailsRepo.findDistinctLocations();
+    }
+
+    @Override
+    public Page<EventDto> findFilteredEvents(EventFilterDto filterDto, Pageable pageable){
+        EventSpecification eventSpecification = getSpecification(filterDto);
+
+        Page<Event> filteredEvents = this.eventRepo.findAll(eventSpecification, pageable);
+
+        return filteredEvents.map(event -> this.modelMapper.map(event, EventDto.class));
     }
 
     /**
@@ -271,5 +336,35 @@ public class EventServiceImpl implements EventService {
             }
         }
     }
+    private EventSpecification getSpecification(EventFilterDto filterDto) {
+        List<SearchCriteria> searchCriteria = buildSearchCriteria(filterDto);
+        return new EventSpecification(searchCriteria);
+    }
+
+    private List<SearchCriteria> buildSearchCriteria(EventFilterDto filterDto) {
+        List<SearchCriteria> criteriaList = new ArrayList<>();
+
+        // Add eventLine to criteria
+        setValueIfNotEmpty(criteriaList, "eventLine", filterDto.getEventLine() != null ? filterDto.getEventLine().toString() : null);
+
+        // Add eventLocation to criteria
+        setValueIfNotEmpty(criteriaList, "eventLocation", filterDto.getEventLocation() != null ? filterDto.getEventLocation() : null);
+
+        // Add eventTime to criteria
+        setValueIfNotEmpty(criteriaList, "eventTime", filterDto.getEventTime() != null ? filterDto.getEventTime().toString() : null);
+
+        return criteriaList;
+    }
+
+    private void setValueIfNotEmpty(List<SearchCriteria> searchCriteriaList, String key, String value) {
+        if (value != null && !value.isEmpty()) {
+            searchCriteriaList.add(SearchCriteria.builder()
+                    .key(key)
+                    .type(key)
+                    .value(value)
+                    .build());
+        }
+    }
+
 
 }

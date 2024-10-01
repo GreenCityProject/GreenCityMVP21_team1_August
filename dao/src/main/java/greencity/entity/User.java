@@ -82,7 +82,7 @@ import java.util.Set;
         "eventOrganizerRating"})
 @ToString(
     exclude = {"verifyEmail", "ownSecurity", "refreshTokenKey", "ecoNewsLiked", "ecoNewsCommentsLiked",
-        "verifyEmail", "estimates", "restorePasswordEmail", "customShoppingListItems", "eventOrganizerRating"})
+        "verifyEmail", "estimates", "restorePasswordEmail", "customShoppingListItems", "eventOrganizerRating", "friends"})
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -165,4 +165,14 @@ public class User {
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
     private Set<Event> events = new HashSet<>();
+
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
+    private Set<EventComment> replyToComment;
+
+    @ManyToMany
+    @JoinTable(
+            name = "users_friends",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "friend_id"))
+    private List<User> friends = new ArrayList<>();
 }

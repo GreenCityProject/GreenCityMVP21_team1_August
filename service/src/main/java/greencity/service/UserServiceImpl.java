@@ -2,19 +2,18 @@ package greencity.service;
 
 import greencity.constant.ErrorMessage;
 import greencity.constant.LogMessage;
+import greencity.dto.PageableAdvancedDto;
 import greencity.dto.PageableDto;
 import greencity.dto.filter.UserFilterDto;
 import greencity.dto.user.UserManagementVO;
 import greencity.dto.user.UserRoleDto;
 import greencity.dto.user.UserStatusDto;
 import greencity.dto.user.UserVO;
+import greencity.dto.user.friends.FriendCardDtoResponse;
 import greencity.entity.User;
 import greencity.enums.Role;
 import greencity.enums.UserStatus;
-import greencity.exception.exceptions.BadUpdateRequestException;
-import greencity.exception.exceptions.LowRoleLevelException;
-import greencity.exception.exceptions.WrongEmailException;
-import greencity.exception.exceptions.WrongIdException;
+import greencity.exception.exceptions.*;
 import greencity.repository.UserRepo;
 import greencity.repository.options.UserFilter;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +22,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
@@ -30,6 +31,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -217,6 +219,82 @@ public class UserServiceImpl implements UserService {
             listOfUsers.getTotalPages());
     }
 
+    @Override
+    @PreAuthorize("@userServiceImpl.isCurrentUserId(#userId)")
+    public void addFriend(Long userId, Long friendId) {
+        if (userRepo.existsFriendshipById(userId, friendId)) {
+            throw new FriendAlreadyAddedException("Friend with id " + friendId + " already added");
+        }
+
+        if (!userId.equals(friendId)){
+            userRepo.addFriendshipRequest(userId, friendId);
+        }
+
+        if (userId.equals(friendId)){
+            throw new BadRequestException("Can't add friend");
+        }
+    }
+
+    @Override
+    @PreAuthorize("@userServiceImpl.isCurrentUserId(#userId)")
+    @Transactional
+    public void acceptFriendshipInvitation(Long userId, Long friendId) {
+        if (userId.equals(friendId)) {
+            throw new BadRequestException("Can't accept friendship");
+        }
+
+        if (userRepo.existsFriendshipById(userId, friendId)) {
+            throw new FriendAlreadyAddedException("Friend with id " + friendId + " already added");
+        }
+
+        if (userRepo.removeFromFriendshipRequestsByAcceptingUserId(userId, friendId) == 0) {
+            throw new BadRequestException("Invitation not exists");
+        }
+
+        userRepo.addFriend(userId, friendId);
+    }
+
+    @PreAuthorize("@userServiceImpl.isCurrentUserId(#userId)")
+    @Override
+    public void cancelFriendshipInvitation(Long userId, Long friendId) {
+        if (userId.equals(friendId)) {
+            throw new BadRequestException("Can't cancel friendship");
+        }
+
+        if (userRepo.removeFromFriendshipRequestsByInvitingUserId(userId, friendId) == 0) {
+            throw new BadRequestException("Invitation not exists");
+        }
+    }
+
+    @PreAuthorize("@userServiceImpl.isCurrentUserId(#userId)")
+    @Override
+    public void declineFriendshipInvitation(Long userId, Long friendId) {
+        if (userId.equals(friendId)){
+            throw new BadRequestException("Can't decline friendship");
+        }
+
+        if (userRepo.removeFromFriendshipRequestsByAcceptingUserId(userId, friendId) == 0) {
+            throw new BadRequestException("Invitation not exists");
+        }
+    }
+
+    @PreAuthorize("@userServiceImpl.isCurrentUserId(#userId)")
+    @Override
+    public void deleteFriend(Long userId, Long friendId) {
+        if (userRepo.existsFriendshipById(userId, friendId)) {
+           throw new BadRequestException("Friendship with user id " + friendId + " not exists");
+        }
+
+        userRepo.removeFriend(userId, friendId);
+    }
+
+    @PreAuthorize("@userServiceImpl.isCurrentUserId(#userId)")
+    @Override
+    public PageableAdvancedDto<FriendCardDtoResponse> getFriendshipRequests(long userId, Pageable page) {
+        Page<User> requests = userRepo.getFriendshipRequestsByUserId(userId, page);
+        return buildPageableAdvancedGeneticDto(requests, userId);
+    }
+
     private UserFilterDto createUserFilterDto(String criteria, String role, String status) {
         if (status != null) {
             status = status.equals("all") ? null : status;
@@ -225,5 +303,31 @@ public class UserServiceImpl implements UserService {
             role = role.equals("all") ? null : role;
         }
         return new UserFilterDto(criteria, role, status);
+    }
+
+    public boolean isCurrentUserId(long userId) {
+        String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserVO user = findByEmail(email);
+        return user.getId() == userId;
+    }
+
+    private PageableAdvancedDto<FriendCardDtoResponse> buildPageableAdvancedGeneticDto(Page<User> page, long userId) {
+        List<FriendCardDtoResponse> friendsDto = page.stream()
+                .map(user -> modelMapper.map(user, FriendCardDtoResponse.class))
+                .toList();
+
+        friendsDto.forEach(friend -> friend.setMutualFriends(userRepo.getAmountOfMutualFriends(userId, friend.getId())));
+
+        return new PageableAdvancedDto<>(
+                friendsDto,
+                page.getTotalElements(),
+                page.getPageable().getPageNumber(),
+                page.getTotalPages(),
+                page.getNumber(),
+                page.hasPrevious(),
+                page.hasContent(),
+                page.isFirst(),
+                page.isLast()
+        );
     }
 }

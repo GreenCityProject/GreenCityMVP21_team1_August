@@ -142,4 +142,173 @@ public interface UserRepo extends JpaRepository<User, Long>, JpaSpecificationExe
     List<User> getAllUserFriends(Long userId);
 
     Optional<User> findByName(String name);
+
+    /**
+     * Check if users already friends
+     *
+     * @param acceptingUserId The ID of the current user.
+     * @param invitedUserId The ID of user who ask for being friends.
+     *
+     * @return boolean result.
+     * @author Chernenko Vitaliy
+     */
+    @Query(nativeQuery = true, value = "SELECT CASE WHEN count(*) > 0 THEN true ELSE false END FROM users_friends " +
+            "WHERE (user_id = :invitedUserId AND friend_id = :acceptingUserId) " +
+            "OR (user_id = :acceptingUserId AND friend_id = :invitedUserId)")
+    boolean existsFriendshipById(Long acceptingUserId, Long invitedUserId);
+
+    /**
+     * Get all user not friends except current user by name.
+     *
+     * @param userId The ID of the current user.
+     * @param queryName The search pattern.
+     * @param paging {@link Pageable}.
+     *
+     * @return list of {@link User}.
+     *
+     * @author Chernenko Vitaliy
+     */
+    @Query(nativeQuery = true, value = "SELECT * FROM users WHERE id NOT IN (" +
+            "            (SELECT user_id FROM users_friends WHERE friend_id = :userId)" +
+            "            UNION (SELECT friend_id FROM users_friends WHERE user_id = :userId)" +
+            "            UNION (SELECT friend_id FROM friendship_requests where user_id = :userId))" +
+            "            AND users.id != :userId" +
+            "            AND (lower(name) LIKE (CONCAT('%', :queryName, '%')) OR lower(first_name) LIKE (CONCAT('%', :queryName, '%')));")
+    Page<User> getAllUsersByNameExceptMainUserAndFriends(Long userId, String queryName, Pageable paging);
+
+    /**
+     * Get all user not friends except current user by name and city.
+     *
+     * @param userId The ID of the current user.
+     * @param queryName The search query pattern for login and name field.
+     * @param city The search query pattern for city field.
+     * @param paging {@link Pageable}.
+     *
+     * @return Page of {@link User}.
+     *
+     * @author Chernenko Vitaliy
+     */
+    @Query(nativeQuery = true, value = "SELECT * FROM users WHERE id NOT IN (" +
+            "            (SELECT user_id FROM users_friends WHERE friend_id = :userId)" +
+            "            UNION (SELECT friend_id FROM users_friends WHERE user_id = :userId)" +
+            "            UNION (SELECT friend_id FROM friendship_requests where user_id = :userId))" +
+            "            AND users.id != :userId" +
+            "            AND ((lower(name) LIKE (CONCAT('%', :queryName, '%')) OR lower(first_name) LIKE (CONCAT('%', :queryName, '%')))" +
+            "            AND (city IS NOT NULL AND lower(city) = :city));")
+    Page<User> getAllUsersByNameAndCityExceptMainUserAndFriends(Long userId, String queryName, String city, Pageable paging);
+
+    /**
+     * Get all user's friends.
+     *
+     * @param userId The ID of the current user.
+     * @param paging {@link Pageable}.
+     *
+     * @return Page of {@link User}.
+     *
+     * @author Chernenko Vitaliy
+     */
+    @Query(nativeQuery = true, value = "SELECT * FROM users WHERE id IN (SELECT friend_id FROM users_friends WHERE user_id = :userId);")
+    Page<User> getAllUsersFriends(Long userId, Pageable paging);
+
+    /**
+     * Get amount of mutual friends.
+     *
+     * @param userId The ID of the current user.
+     * @param otherUserId The ID of user with whom need amount of mutual friends.
+     *
+     * @return amount as int.
+     *
+     * @author Chernenko Vitaliy
+     */
+    @Query(nativeQuery = true, value = "SELECT count(*)" +
+            "FROM (SELECT friend_id AS user_id" +
+            "      FROM users_friends WHERE user_id = :userId" +
+            "      UNION" +
+            "      SELECT user_id AS user_id FROM users_friends WHERE friend_id = :userId) as friends " +
+            "WHERE user_id IN(SELECT friend_id AS user_id FROM users_friends" +
+            "       WHERE user_id = :otherUserId" +
+            "       UNION" +
+            "       SELECT user_id AS user_id FROM users_friends" +
+            "       WHERE friend_id = :otherUserId);")
+    int getAmountOfMutualFriends(Long userId, Long otherUserId);
+
+    /**
+     * Get all users who sent invitation for friendship for current user.
+     *
+     * @param userId The ID of the current user.
+     *
+     * @return Page of {@link User}.
+     *
+     * @author Chernenko Vitaliy
+     */
+    @Query(nativeQuery = true, value = "SELECT * FROM users WHERE id IN (SELECT user_id FROM friendship_requests WHERE friend_id = :userId);")
+    Page<User> getFriendshipRequestsByUserId(Long userId, Pageable paging);
+
+    /**
+     * Add user as friend.
+     *
+     * @param userId The ID of the current user.
+     * @param friendId The ID of user who will be added as friend.
+     *
+     * @author Chernenko Vitaliy
+     */
+    @Modifying
+    @Transactional
+    @Query(nativeQuery = true, value = "INSERT INTO users_friends(user_id, friend_id) VALUES(:userId, :friendId);" +
+            "INSERT INTO users_friends(user_id, friend_id) VALUES(:friendId, :userId);")
+    void addFriend(Long userId, Long friendId);
+
+    /**
+     * Add request for friendship.
+     *
+     * @param userId The ID of the current user who is making request.
+     * @param friendId The ID of user who is requested be friends.
+     *
+     * @author Chernenko Vitaliy
+     */
+    @Modifying
+    @Transactional
+    @Query(nativeQuery = true, value = "INSERT INTO friendship_requests(user_id, friend_id) VALUES(:userId, :friendId);")
+    void addFriendshipRequest(Long userId, Long friendId);
+
+    /**
+     * Remove row from friendship_requests
+     *
+     * @param acceptingUserId The ID of the current user who is accepting friendship invitation.
+     * @param invitedUserId The ID of user who have sent an invitation.
+     *
+     * @author Chernenko Vitaliy
+     */
+    @Modifying
+    @Transactional
+    @Query(nativeQuery = true, value = "DELETE FROM friendship_requests WHERE friend_id = :acceptingUserId AND user_id = :invitedUserId " +
+            "OR user_id = :acceptingUserId AND friend_id = :invitedUserId")
+    int removeFromFriendshipRequestsByAcceptingUserId(Long acceptingUserId, Long invitedUserId);
+
+    /**
+     * Remove row from friendship_requests
+     *
+     * @param invitedUserId The ID of the current user who have sent friendship invitation.
+     * @param acceptingUserId The ID of user who was invited be friends.
+     *
+     * @author Chernenko Vitaliy
+     */
+    @Modifying
+    @Transactional
+    @Query(nativeQuery = true, value = "DELETE FROM friendship_requests WHERE user_id = :invitedUserId AND friend_id = :acceptingUserId")
+    int removeFromFriendshipRequestsByInvitingUserId(Long invitedUserId, Long acceptingUserId);
+
+    /**
+     * Remove user from friends.
+     *
+     * @param userId The ID of the current user.
+     * @param friendId The ID of user who will be removed from friends.
+     *
+     * @author Chernenko Vitaliy
+     */
+    @Modifying
+    @Transactional
+    @Query(nativeQuery = true, value = "DELETE FROM users_friends WHERE user_id = :userId AND friend_id = :friendId " +
+            "OR user_id = :friendId AND friend_id = :userId ;")
+    void removeFriend(Long userId, Long friendId);
 }

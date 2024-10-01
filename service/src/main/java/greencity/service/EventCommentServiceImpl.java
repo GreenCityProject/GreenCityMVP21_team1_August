@@ -88,6 +88,7 @@ public class EventCommentServiceImpl implements EventCommentService {
     }
 
     @Override
+    @Transactional
     public AddEventCommentDtoResponse addComment(Long eventId, AddEventCommentDtoRequest commentDto
             , UserVO currentUserVO) {
         Event event = eventRepo.findById(eventId)
@@ -125,6 +126,7 @@ public class EventCommentServiceImpl implements EventCommentService {
     }
 
     @Override
+    @Transactional
     @PreAuthorize("hasRole('ADMIN') or @eventCommentServiceImpl.isOwner(#replyToCommentId, #authorId)")
     public EventCommentDtoResponse updateReply(EventCommentDtoRequest commentDtoRequest, Long replyToCommentId, Long authorId) {
         EventComment existingComment = this.eventCommentRepo.findById(replyToCommentId)

@@ -14,4 +14,6 @@ public interface EventCommentRepo extends JpaRepository<EventComment, Long> {
 
     @Query("SELECT c FROM EventComment c WHERE c.parentComment.id = :commentId")
     List<EventComment> findAllByEventCommentId(Long commentId);
+
+    List<EventComment> findByParentCommentIdOrderByCreatedDateDesc(Long parentCommentId);
 }

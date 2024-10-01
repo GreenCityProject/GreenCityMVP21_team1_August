@@ -768,4 +768,11 @@ public class ModelUtils {
             .author(AuthorDto.builder().id(1L).name("Some Author").build())
             .build();
     }
+
+    public static Specification getSpecification() {
+        return Specification.builder()
+                .id(1L)
+                .name("specification")
+                .build();
+    }
 }

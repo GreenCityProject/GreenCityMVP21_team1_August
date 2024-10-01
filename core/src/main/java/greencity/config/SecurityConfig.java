@@ -48,6 +48,7 @@ public class SecurityConfig {
     private static final String CUSTOM_SHOPPING_LIST_ITEMS = "/{userId}/custom-shopping-list-items";
     private static final String HABIT_ASSIGN_ID = "/habit/assign/{habitId}";
     private static final String USER_SHOPPING_LIST = "/user/shopping-list-items";
+    private static final String COMMENTS = "/events/comments";
     private final JwtTool jwtTool;
     private final UserService userService;
     private final AuthenticationConfiguration authenticationConfiguration;
@@ -204,6 +205,8 @@ public class SecurityConfig {
                                 "/habit/tags/search",
                                 "/habit/search",
                                 "/habit/{habitId}/friends/profile-pictures",
+                                COMMENTS,
+                                "/comments/allReplies/{commentId}",
                                 "/notifications/unread",
                                 "/notifications/all",
                                 "/notifications/topThree",
@@ -262,6 +265,7 @@ public class SecurityConfig {
                                 "/events/{eventId}",
                                 "/events/comments/{eventId}/{commentId}",
                                 "/econews/{econewsId}",
+                                "/events/{eventId}/leave",
                                 CUSTOM_SHOPPING_LIST_ITEMS,
                                 CUSTOM_SHOPPING_LIST_URL,
                                 "/favorite_place/{placeId}",
@@ -300,6 +304,24 @@ public class SecurityConfig {
                                 "/comments")
                         .hasAnyRole(ADMIN)
                         .requestMatchers(HttpMethod.GET,
+                                "/events/{userID}",
+                                "/events",
+                                "/events/{eventId}/join",
+                                "/events/filter",
+                                "/friends",
+                                "/friends/not-friends-yet",
+                                "/friends/friendRequests")
+                        .hasAnyRole(ADMIN, USER)
+                        .requestMatchers(HttpMethod.POST,
+                                "/friends/{friendId}")
+                        .hasAnyRole(ADMIN, USER)
+                        .requestMatchers(HttpMethod.PATCH,
+                                "/friends/{friendId}/acceptFriend")
+                        .hasAnyRole(ADMIN, USER)
+                        .requestMatchers(HttpMethod.DELETE,
+                                "/friends/{friendId}",
+                                "/friends/{friendId}/cancelFriend",
+                                "/friends/{friendId}/declineFriend",
                                 "/events/{userID}")
                         .hasAnyRole(ADMIN, USER)
                         .anyRequest().hasAnyRole(ADMIN))
