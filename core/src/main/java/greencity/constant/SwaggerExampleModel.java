@@ -40,14 +40,12 @@ public final class SwaggerExampleModel {
             + "}\n"
             + AFTER_EXAMPLE;
 
-    public static final String ADD_ECO_NEWS_REQUEST =
-        "Add Eco News Request\n"
-            + IMAGE_DESCRIPTION
-            + BEFORE_EXAMPLE
-            + "{\n"
-            + EXAMPLE
-            + "}\n"
-            + AFTER_EXAMPLE;
+    public static final String ADD_ECO_NEWS_REQUEST = "{\n" +
+            "  \"tags\": [\"string\"],\n" +
+            "  \"text\": \"string\",\n" +
+            "  \"title\": \"string\",\n" +
+            "  \"source\": \"string\"\n" +
+            "}";
     public static final String UPDATE_ECO_NEWS =
         "Update Eco News\n"
             + IMAGE_DESCRIPTION

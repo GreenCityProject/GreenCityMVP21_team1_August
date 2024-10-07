@@ -12,19 +12,15 @@ import java.util.List;
 @EqualsAndHashCode
 public class AddEcoNewsDtoRequest {
     @NotEmpty
-    @Size(min = 1, max = 170)
-    private String title;
+    private List<String> tags;
 
     @NotEmpty
     @Size(min = 20, max = 63206)
     private String text;
 
     @NotEmpty
-    private List<String> tags;
+    @Size(min = 1, max = 170)
+    private String title;
 
     private String source;
-
-    private String image;
-
-    private String shortInfo;
 }
