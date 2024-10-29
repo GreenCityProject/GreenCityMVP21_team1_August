@@ -31,11 +31,11 @@ public class EventComment {
     private String content;
 
     @CreatedDate
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, name = "created_date")
     private LocalDateTime createdDate;
 
     @LastModifiedDate
-    @Column(nullable = false)
+    @Column(nullable = false, name = "updated_date")
     private LocalDateTime updatedDate;
 
     @ManyToOne
