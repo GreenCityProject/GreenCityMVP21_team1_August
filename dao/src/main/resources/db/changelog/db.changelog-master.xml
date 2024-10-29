@@ -51,10 +51,10 @@
     <include file="db/changelog/logs/ch-fact-of-the-day-Lehkyi.xml"/>
     <include file="db/changelog/logs/ch-social-network-Lehkyi.xml"/>
     <include file="db/changelog/logs/ch_rating_statictics_Dovganyuk.xml"/>
-    <include file="/db/changelog/logs/ch-user-username-column-type.xml"/>
-    <include file="/db/changelog/logs/ch-tips-and-tricks-translations-Petryshak.xml"/>
+    <include file="db/changelog/logs/ch-user-username-column-type.xml"/>
+    <include file="db/changelog/logs/ch-tips-and-tricks-translations-Petryshak.xml"/>
     <include file="db/changelog/logs/ch-habits-refactor-Kravchenko.xml"/>
-    <include file="/db/changelog/logs/ch-change-column-name-goals-Petryshak.xml"/>
+    <include file="db/changelog/logs/ch-change-column-name-goals-Petryshak.xml"/>
     <include file="db/changelog/logs/ch-change-custom-goals-Khonko.xml"/>
     <include file="db/changelog/logs/ch-change-goals-Khonko.xml"/>
     <include file="db/changelog/logs/ch-habits-new-fields-Kravchenko.xml"/>
@@ -151,14 +151,14 @@
     <include file="db/changelog/logs/ch-update-fact-of-the-day-translations-Vatuliak.xml"/>
     <include file="db/changelog/logs/ch-update-habit-translation-Vatuliak.xml"/>
     <include file="db/changelog/logs/ch-update-habit-translations-Mokhnatska.xml"/>
-    <include file="/db/changelog/logs/ch-add-table-employee-positions-mapping-Bondar.xml"/>
+    <include file="db/changelog/logs/ch-add-table-employee-positions-mapping-Bondar.xml"/>
     <include file="db/changelog/logs/ch-change-table-events-dates-locations-dropNotNullConstraint-Seti.xml"/>
     <include file="db/changelog/logs/ch-update-employee_authorities-table-name-value-Bondar.xml"/>
     <include file="db/changelog/logs/ch-add-table-events-followers-Bondar.xml"/>
     <include file="db/changelog/logs/ch-add-formatted_address-to-event_dates_locations-Lenets.xml"/>
     <include file="db/changelog/logs/ch-drop-table-achievements-Bokalo.xml"/>
-    <include file="/db/changelog/logs/ch-drop-table-achievement-translation-Bokalo.xml"/>
-    <include file="/db/changelog/logs/ch-drop-table-achievements-categories-Bokalo.xml"/>
+    <include file="db/changelog/logs/ch-drop-table-achievement-translation-Bokalo.xml"/>
+    <include file="db/changelog/logs/ch-drop-table-achievements-categories-Bokalo.xml"/>
     <include file="db/changelog/logs/ch-drop-all-employee-tables-Bokalo.xml"/>
     <include file="db/changelog/logs/ch-drop-all-events-tables-Bokalo.xml"/>
     <include file="db/changelog/logs/ch-drop-table-user-achievemets.xml"/>
@@ -178,8 +178,8 @@
     <include file="db/changelog/logs/ch-drop-user-friends-table-Bokalo.xml"/>
     <include file="db/changelog/logs/ch-event-Chernenko.xml"/>
     <include file="db/changelog/logs/ch-event-vulook.xml"/>
-    <include file="/db/changelog/logs/ch-notification.xml"/>
-    <include file="/db/changelog/logs/ch-event-participant.xml"/>
-    <include file="db/changelog/2024/10/ch-event-comment.xml"/>
+    <include file="db/changelog/logs/ch-notification.xml"/>
+    <include file="db/changelog/logs/ch-event-participant.xml"/>
+    <include file="db/changelog/logs/ch-event-comment.xml"/>
 </databaseChangeLog>
 
