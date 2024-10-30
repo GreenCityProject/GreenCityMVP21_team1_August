@@ -32,6 +32,8 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+
+
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -300,7 +302,7 @@ public class EcoNewsServiceImpl implements EcoNewsService {
             tags.addAll(ecoNews.getTags().stream().flatMap(t -> t.getTagTranslations().stream())
                 .filter(tagTranslation -> tagTranslation.getLanguage().getCode().equals(lang))
                 .map(TagTranslation::getName)
-                .collect(Collectors.toList()));
+                .toList());
         }
         return getEcoNewsDto(ecoNews, tags);
     }
@@ -574,8 +576,12 @@ public class EcoNewsServiceImpl implements EcoNewsService {
 
     @Override
     public Boolean checkNewsIsLikedByUser(Long id, UserVO userVO) {
+        if (userVO == null) {
+            return null;
+        }
         EcoNewsVO ecoNewsVO = findById(id);
-        return ecoNewsVO.getUsersLikedNews().stream().anyMatch(u -> u.getId().equals(userVO.getId()));
+        return ecoNewsVO.getUsersLikedNews().stream()
+                .anyMatch(u -> u.getId().equals(userVO.getId()));
     }
 
     /**
@@ -675,7 +681,7 @@ public class EcoNewsServiceImpl implements EcoNewsService {
                 .flatMap(t -> t.getTagTranslations().stream())
                 .filter(t -> t.getLanguage().getCode().equals(language))
                 .map(TagTranslation::getName)
-                .collect(Collectors.toList()));
+                .toList());
         }
 
         return buildEcoNewsGenericDto(ecoNews, tags);
@@ -779,6 +785,18 @@ public class EcoNewsServiceImpl implements EcoNewsService {
         return toSave;
     }
 
+    public PageableAdvancedDto<EcoNewsGenericDto> findByTags(List<String> tags, Pageable pageable){
+        Page<EcoNews> pages;
+        if (pageable.getSort().isEmpty()){
+            pages = this.ecoNewsRepo.findByTags(pageable, tags);
+        }else if (pageable.getSort().isUnsorted()){
+            pages = this.ecoNewsRepo.findByTags(pageable, tags);
+        }else {
+            throw new UnsupportedSortException(ErrorMessage.INVALID_SORTING_VALUE);
+        }
+        return buildPageableAdvancedGeneticDto(pages);
+    }
+
     @Override
     public Set<UserVO> findUsersWhoLikedPost(Long id) {
         EcoNews ecoNews = ecoNewsRepo
@@ -795,5 +813,14 @@ public class EcoNewsServiceImpl implements EcoNewsService {
             .orElseThrow(() -> new NotFoundException(ErrorMessage.ECO_NEWS_NOT_FOUND_BY_ID + id));
         Set<User> usersDislikedNews = ecoNews.getUsersDislikedNews();
         return usersDislikedNews.stream().map(u -> modelMapper.map(u, UserVO.class)).collect(Collectors.toSet());
+    }
+
+    @Override
+    public PageableAdvancedDto<EcoNewsGenericDto> findEcoNewsByTags(Pageable page, List<String> tags) {
+        if (tags == null || tags.isEmpty()){
+            return findGenericAll(page);
+        }else {
+            return findByTags(tags, page);
+        }
     }
 }

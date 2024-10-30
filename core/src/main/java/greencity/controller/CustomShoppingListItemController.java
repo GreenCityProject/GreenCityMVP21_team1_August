@@ -41,7 +41,7 @@ public class CustomShoppingListItemController {
     public ResponseEntity<List<CustomShoppingListItemResponseDto>> getAllAvailableCustomShoppingListItems(
         @PathVariable Long userId, @PathVariable Long habitId) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(customShoppingListItemService.findAllAvailableCustomShoppingListItems(userId, habitId));
+            .body(this.customShoppingListItemService.findAllAvailableCustomShoppingListItems(userId, habitId));
     }
 
     /**
@@ -66,7 +66,7 @@ public class CustomShoppingListItemController {
         @PathVariable Long habitAssignId) {
         return ResponseEntity
             .status(HttpStatus.CREATED)
-            .body(customShoppingListItemService.save(dto, userId, habitAssignId));
+            .body(this.customShoppingListItemService.save(dto, userId, habitAssignId));
     }
 
     /**
@@ -91,7 +91,7 @@ public class CustomShoppingListItemController {
         @RequestParam("itemId") Long itemId,
         @RequestParam("status") String itemStatus) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(customShoppingListItemService.updateItemStatus(userId, itemId, itemStatus));
+            .body(this.customShoppingListItemService.updateItemStatus(userId, itemId, itemStatus));
     }
 
     /**
@@ -111,7 +111,7 @@ public class CustomShoppingListItemController {
     @PatchMapping("/{userId}/done")
     public void updateItemStatusToDone(@PathVariable @CurrentUserId Long userId,
         @RequestParam("itemId") Long itemId) {
-        customShoppingListItemService.updateItemStatusToDone(userId, itemId);
+        this.customShoppingListItemService.updateItemStatusToDone(userId, itemId);
     }
 
     /**
@@ -133,7 +133,7 @@ public class CustomShoppingListItemController {
         @Parameter(description = "Ids of custom shopping-list-items separated by a comma \n e.g. 1,2",
             required = true) @RequestParam String ids,
         @PathVariable @CurrentUserId Long userId) {
-        return ResponseEntity.status(HttpStatus.OK).body(customShoppingListItemService.bulkDelete(ids));
+        return ResponseEntity.status(HttpStatus.OK).body(this.customShoppingListItemService.bulkDelete(ids));
     }
 
     /**
@@ -158,6 +158,6 @@ public class CustomShoppingListItemController {
             + " Leave this field empty if you need items with any status") @RequestParam(
                 required = false) String status) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(customShoppingListItemService.findAllUsersCustomShoppingListItemsByStatus(userId, status));
+            .body(this.customShoppingListItemService.findAllUsersCustomShoppingListItemsByStatus(userId, status));
     }
 }

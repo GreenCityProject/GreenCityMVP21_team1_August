@@ -296,4 +296,6 @@ public interface EcoNewsService {
      * @return list of {@link UserVO} instances.
      */
     Set<UserVO> findUsersWhoDislikedPost(Long id);
+
+    PageableAdvancedDto<EcoNewsGenericDto> findEcoNewsByTags(Pageable page, List<String> tags);
 }

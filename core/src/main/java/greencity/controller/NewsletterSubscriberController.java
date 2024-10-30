@@ -27,6 +27,6 @@ public class NewsletterSubscriberController {
     })
     @PostMapping("/subscribe")
     public ResponseEntity<NewsletterSubscriberDto> subscribe(@Valid @RequestBody NewsletterSubscriberDto newsletterSubscriberDto) {
-        return ResponseEntity.ok(newsletterSubscriberService.subscribe(newsletterSubscriberDto));
+        return ResponseEntity.ok(this.newsletterSubscriberService.subscribe(newsletterSubscriberDto));
     }
 }

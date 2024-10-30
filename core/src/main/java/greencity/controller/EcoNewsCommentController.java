@@ -56,7 +56,7 @@ public class EcoNewsCommentController {
         @Parameter(hidden = true) @CurrentUser UserVO user) {
         return ResponseEntity
             .status(HttpStatus.CREATED)
-            .body(ecoNewsCommentService.save(econewsId, request, user));
+            .body(this.ecoNewsCommentService.save(econewsId, request, user));
     }
 
     /**
@@ -72,7 +72,7 @@ public class EcoNewsCommentController {
     })
     @GetMapping("/count/comments/{ecoNewsId}")
     public int getCountOfComments(@PathVariable Long ecoNewsId) {
-        return ecoNewsCommentService.countOfComments(ecoNewsId);
+        return this.ecoNewsCommentService.countOfComments(ecoNewsId);
     }
 
     /**
@@ -95,7 +95,7 @@ public class EcoNewsCommentController {
         @PathVariable Long parentCommentId, @Parameter(hidden = true) @CurrentUser UserVO user) {
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(ecoNewsCommentService.findAllReplies(pageable, parentCommentId, user));
+            .body(this.ecoNewsCommentService.findAllReplies(pageable, parentCommentId, user));
     }
 
     /**
@@ -112,7 +112,7 @@ public class EcoNewsCommentController {
     })
     @GetMapping("count/replies/{parentCommentId}")
     public int getCountOfReplies(@PathVariable Long parentCommentId) {
-        return ecoNewsCommentService.countReplies(parentCommentId);
+        return this.ecoNewsCommentService.countReplies(parentCommentId);
     }
 
     /**
@@ -129,7 +129,7 @@ public class EcoNewsCommentController {
     })
     @DeleteMapping("")
     public ResponseEntity<Object> delete(Long id, @Parameter(hidden = true) @CurrentUser UserVO user) {
-        ecoNewsCommentService.deleteById(id, user);
+        this.ecoNewsCommentService.deleteById(id, user);
         return ResponseEntity.ok().build();
     }
 
@@ -149,7 +149,7 @@ public class EcoNewsCommentController {
     @PatchMapping("")
     public void update(Long id, @RequestParam @NotBlank String text,
                        @Parameter(hidden = true) @CurrentUser UserVO user) {
-        ecoNewsCommentService.update(text, id, user);
+        this.ecoNewsCommentService.update(text, id, user);
     }
 
     /**
@@ -166,7 +166,7 @@ public class EcoNewsCommentController {
     })
     @PostMapping("like")
     public void like(@RequestParam("id") Long id, @Parameter(hidden = true) @CurrentUser UserVO user) {
-        ecoNewsCommentService.like(id, user);
+        this.ecoNewsCommentService.like(id, user);
     }
 
     /**
@@ -176,7 +176,7 @@ public class EcoNewsCommentController {
      */
     @MessageMapping("/likeAndCount")
     public void getCountOfLike(@Payload AmountCommentLikesDto amountCommentLikesDto) {
-        ecoNewsCommentService.countLikes(amountCommentLikesDto);
+        this.ecoNewsCommentService.countLikes(amountCommentLikesDto);
     }
 
     /**
@@ -198,7 +198,7 @@ public class EcoNewsCommentController {
             @Parameter(hidden = true) Pageable pageable, Long ecoNewsId,
         @Parameter(hidden = true) @CurrentUser UserVO user) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(ecoNewsCommentService.getAllActiveComments(pageable, user, ecoNewsId));
+            .body(this.ecoNewsCommentService.getAllActiveComments(pageable, user, ecoNewsId));
     }
 
     /**
@@ -223,6 +223,6 @@ public class EcoNewsCommentController {
         @Parameter(hidden = true) @CurrentUser UserVO user) {
         return ResponseEntity
             .status(HttpStatus.OK)
-            .body(ecoNewsCommentService.findAllActiveReplies(pageable, parentCommentId, user));
+            .body(this.ecoNewsCommentService.findAllActiveReplies(pageable, parentCommentId, user));
     }
 }

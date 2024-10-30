@@ -35,7 +35,7 @@ public class CategoryController {
     })
     @PostMapping
     public ResponseEntity<CategoryDtoResponse> saveCategory(@Valid @RequestBody CategoryDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.save(dto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.categoryService.save(dto));
     }
 
     /**
@@ -51,6 +51,6 @@ public class CategoryController {
     })
     @GetMapping
     public ResponseEntity<List<CategoryDto>> findAllCategory() {
-        return ResponseEntity.status(HttpStatus.OK).body(categoryService.findAllCategoryDto());
+        return ResponseEntity.status(HttpStatus.OK).body(this.categoryService.findAllCategoryDto());
     }
 }

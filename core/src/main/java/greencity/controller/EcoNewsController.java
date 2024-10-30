@@ -273,11 +273,8 @@ public class EcoNewsController {
             @Parameter(hidden = true) Pageable page,
             @Parameter(description = "Tags to filter (if do not input tags get all)") @RequestParam(
                     required = false) List<String> tags) {
-        if (tags == null || tags.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.OK).body(
-                    ecoNewsService.findGenericAll(page));
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(ecoNewsService.find(page, tags));
+        PageableAdvancedDto<EcoNewsGenericDto> result = this.ecoNewsService.findEcoNewsByTags(page, tags);
+        return ResponseEntity.ok(result);
     }
 
     /**
@@ -292,7 +289,7 @@ public class EcoNewsController {
     })
     @GetMapping("/recommended")
     public ResponseEntity<List<EcoNewsDto>> getThreeRecommendedEcoNews(@RequestParam() Long openedEcoNewsId) {
-        List<EcoNewsDto> threeRecommendedEcoNews = ecoNewsService.getThreeRecommendedEcoNews(openedEcoNewsId);
+        List<EcoNewsDto> threeRecommendedEcoNews = this.ecoNewsService.getThreeRecommendedEcoNews(openedEcoNewsId);
         return ResponseEntity.status(HttpStatus.OK).body(threeRecommendedEcoNews);
     }
 
@@ -306,7 +303,8 @@ public class EcoNewsController {
     @GetMapping("/tags/all")
     @ApiLocale
     public ResponseEntity<List<TagDto>> findAllEcoNewsTags(@Parameter(hidden = true) @ValidLanguage Locale locale) {
-        return ResponseEntity.status(HttpStatus.OK).body(tagService.findAllEcoNewsTags(locale.getLanguage()));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(this.tagService.findAllEcoNewsTags(locale.getLanguage()));
     }
 
     /**
@@ -318,7 +316,8 @@ public class EcoNewsController {
     @Operation(summary = "Find count of published eco news")
     @GetMapping("/count")
     public ResponseEntity<Long> findAmountOfPublishedNews(@RequestParam Long userId) {
-        return ResponseEntity.status(HttpStatus.OK).body(ecoNewsService.getAmountOfPublishedNewsByUserId(userId));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(this.ecoNewsService.getAmountOfPublishedNewsByUserId(userId));
     }
 
     /**
@@ -332,8 +331,10 @@ public class EcoNewsController {
         @ApiResponse(responseCode = "404", description = HttpStatuses.NOT_FOUND)
     })
     @PostMapping("/like")
-    public void like(@RequestParam("id") Long id, @Parameter(hidden = true) @CurrentUser UserVO user) {
-        ecoNewsService.like(user, id);
+    public void like(@RequestParam("id") Long id,
+                     @Parameter(hidden = true) @CurrentUser UserVO user)
+    {
+        this.ecoNewsService.like(user, id);
     }
 
     /**
@@ -346,8 +347,10 @@ public class EcoNewsController {
         @ApiResponse(responseCode = "401", description = HttpStatuses.UNAUTHORIZED)
     })
     @PostMapping("/dislike")
-    public void dislike(@RequestParam("id") Long id, @Parameter(hidden = true) @CurrentUser UserVO user) {
-        ecoNewsService.dislike(user, id);
+    public void dislike(@RequestParam("id") Long id,
+                        @Parameter(hidden = true) @CurrentUser UserVO user)
+    {
+        this.ecoNewsService.dislike(user, id);
     }
 
     /**
@@ -363,7 +366,7 @@ public class EcoNewsController {
     })
     @GetMapping("/countLikes/{econewsId}")
     public ResponseEntity<Integer> countLikesForEcoNews(@PathVariable Long econewsId) {
-        return ResponseEntity.status(HttpStatus.OK).body(ecoNewsService.countLikesForEcoNews(econewsId));
+        return ResponseEntity.status(HttpStatus.OK).body(this.ecoNewsService.countLikesForEcoNews(econewsId));
     }
 
     /**
@@ -374,11 +377,10 @@ public class EcoNewsController {
     @Operation(summary = "Check if user liked news")
     @GetMapping("/isLikedByUser")
     public ResponseEntity<Boolean> checkNewsIsLikedByUser(@RequestParam("econewsId") Long econewsId,
-                                                          @Parameter(hidden = true) @CurrentUser UserVO user) {
-        if (user != null) {
-            return ResponseEntity.status(HttpStatus.OK).body(ecoNewsService.checkNewsIsLikedByUser(econewsId, user));
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                                                          @Parameter(hidden = true) @CurrentUser UserVO user)
+    {
+        Boolean isLiked = this.ecoNewsService.checkNewsIsLikedByUser(econewsId, user);
+        return ResponseEntity.ok(isLiked);
     }
 
     /**
@@ -397,6 +399,6 @@ public class EcoNewsController {
     @GetMapping("/contentAndSourceForEcoNews/{id}")
     public ResponseEntity<EcoNewContentSourceDto> getContentAndSourceForEcoNewsById(@PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ecoNewsService.getContentAndSourceForEcoNewsById(id));
+                .body(this.ecoNewsService.getContentAndSourceForEcoNewsById(id));
     }
 }
