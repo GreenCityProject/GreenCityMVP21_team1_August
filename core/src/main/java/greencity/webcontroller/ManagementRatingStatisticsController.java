@@ -61,7 +61,7 @@ public class ManagementRatingStatisticsController {
         Pageable paging =
             PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("createDate").descending());
         PageableAdvancedDto<RatingStatisticsDtoForTables> pageableDto =
-            ratingStatisticsService.getRatingStatisticsForManagementByPage(paging);
+            this.ratingStatisticsService.getRatingStatisticsForManagementByPage(paging);
         model.addAttribute("ratings", pageableDto);
         return "core/management_user_rating";
     }
@@ -76,14 +76,14 @@ public class ManagementRatingStatisticsController {
         response.setContentType("application/octet-stream");
         String headerKey = "Content-Disposition";
 
-        String currentDate = dateFormat.format(new Date());
+        String currentDate = this.dateFormat.format(new Date());
         String fileName = "user_rating_statistics" + currentDate + ".xlsx";
         String headerValue = "attachment; filename=" + fileName;
 
         response.setHeader(headerKey, headerValue);
 
-        List<RatingStatisticsDto> ratingStatisticsList = ratingStatisticsService.getAllRatingStatistics();
-        ratingExcelExporter.export(response.getOutputStream(), ratingStatisticsList);
+        List<RatingStatisticsDto> ratingStatisticsList = this.ratingStatisticsService.getAllRatingStatistics();
+        this.ratingExcelExporter.export(response.getOutputStream(), ratingStatisticsList);
     }
 
     /**
@@ -98,16 +98,16 @@ public class ManagementRatingStatisticsController {
         response.setContentType("application/octet-stream");
         String headerKey = "Content-Disposition";
 
-        String currentDate = dateFormat.format(new Date());
+        String currentDate = this.dateFormat.format(new Date());
         String fileName = "user_rating_statistics" + currentDate + ".xlsx";
         String headerValue = "attachment; filename=" + fileName;
 
         response.setHeader(headerKey, headerValue);
 
         List<RatingStatisticsDto> ratingStatisticsList =
-            ratingStatisticsService
+            this.ratingStatisticsService
                 .getFilteredRatingStatisticsForExcel(ratingStatisticsViewDto);
-        ratingExcelExporter.export(response.getOutputStream(), ratingStatisticsList);
+        this.ratingExcelExporter.export(response.getOutputStream(), ratingStatisticsList);
     }
 
     /**
@@ -123,7 +123,7 @@ public class ManagementRatingStatisticsController {
         @PageableDefault(value = 20) @ApiIgnore Pageable pageable,
         RatingStatisticsViewDto ratingStatisticsViewDto) {
         PageableAdvancedDto<RatingStatisticsDtoForTables> pageableDto =
-            ratingStatisticsService.getFilteredDataForManagementByPage(pageable,
+            this.ratingStatisticsService.getFilteredDataForManagementByPage(pageable,
                 ratingStatisticsViewDto);
         model.addAttribute("ratings", pageableDto);
         model.addAttribute("fields", ratingStatisticsViewDto);

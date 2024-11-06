@@ -41,17 +41,17 @@ public class ManagementUserPersonalPageController {
     public String getUserById(@PathVariable Long id,
         @RequestParam(required = false, name = "query") String query, Model model,
         @ApiIgnore @ValidLanguage Locale locale) {
-        UserVO user = userService.findById(id);
+        UserVO user = this.userService.findById(id);
 
-        List<HabitAssignDto> acquiredHabits = habitAssignService
+        List<HabitAssignDto> acquiredHabits = this.habitAssignService
             .getAllHabitAssignsByUserIdAndStatusAcquired(id, locale.getLanguage());
-        List<HabitAssignDto> inProgressHabits = habitAssignService
+        List<HabitAssignDto> inProgressHabits = this.habitAssignService
             .findInprogressHabitAssignsOnDateContent(id, LocalDate.now(), locale.getLanguage());
-        List<HabitAssignDto> cancelledHabits = habitAssignService
+        List<HabitAssignDto> cancelledHabits = this.habitAssignService
             .getAllHabitAssignsByUserIdAndCancelledStatus(id, locale.getLanguage());
-        List<HabitAssignDto> customHabits = habitAssignService
+        List<HabitAssignDto> customHabits = this.habitAssignService
             .getAllCustomHabitAssignsByUserId(id, locale.getLanguage());
-        List<EcoNewsDto> publishedEcoNews = ecoNewsService.getAllPublishedNewsByUserId(user.getId());
+        List<EcoNewsDto> publishedEcoNews = this.ecoNewsService.getAllPublishedNewsByUserId(user.getId());
 
         model.addAttribute("user", user);
         model.addAttribute("acquiredHabits", acquiredHabits);
@@ -75,7 +75,7 @@ public class ManagementUserPersonalPageController {
     public String updateUserStatus(@PathVariable Long id, @RequestParam(name = "userStatus") String userStatus,
         @CurrentUser UserVO currentUser) {
         UserStatus status = UserStatus.valueOf(userStatus.toUpperCase());
-        userService.updateStatus(id, status, currentUser.getEmail());
+        this.userService.updateStatus(id, status, currentUser.getEmail());
         return "redirect:/management/users/{id}";
     }
 
@@ -92,7 +92,7 @@ public class ManagementUserPersonalPageController {
     public String updateUserRole(@PathVariable Long id, @RequestParam(name = "userRole") String userRole,
         @CurrentUser UserVO currentUser) {
         Role role = Role.valueOf("ROLE_" + userRole.toUpperCase());
-        userService.updateRole(id, role, currentUser.getEmail());
+        this.userService.updateRole(id, role, currentUser.getEmail());
         return "redirect:/management/users/{id}";
     }
 }

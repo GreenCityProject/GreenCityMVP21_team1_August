@@ -57,13 +57,13 @@ public class ManagementEcoNewsController {
                                 @Parameter(hidden = true) Pageable pageable, EcoNewsViewDto ecoNewsViewDto) {
         PageableAdvancedDto<EcoNewsDto> allEcoNews;
         if (ecoNewsViewDto.getId() != null && !ecoNewsViewDto.isEmpty()) {
-            allEcoNews = ecoNewsService.getFilteredDataForManagementByPage(pageable, ecoNewsViewDto);
+            allEcoNews = this.ecoNewsService.getFilteredDataForManagementByPage(pageable, ecoNewsViewDto);
             model.addAttribute("fields", ecoNewsViewDto);
             model.addAttribute("query", "");
         } else {
             allEcoNews = query == null || query.isEmpty()
-                    ? ecoNewsService.findAll(pageable)
-                    : ecoNewsService.searchEcoNewsBy(pageable, query);
+                    ? this.ecoNewsService.findAll(pageable)
+                    : this.ecoNewsService.searchEcoNewsBy(pageable, query);
             model.addAttribute("fields", new EcoNewsViewDto());
             model.addAttribute("query", query);
         }
@@ -77,7 +77,7 @@ public class ManagementEcoNewsController {
             }
             model.addAttribute("sortModel", orderUrl);
         }
-        model.addAttribute("ecoNewsTag", tagsService.findAllEcoNewsTags("en"));
+        model.addAttribute("ecoNewsTag", this.tagsService.findAllEcoNewsTags("en"));
         model.addAttribute("pageSize", pageable.getPageSize());
         return "core/management_eco_news";
     }
@@ -92,7 +92,7 @@ public class ManagementEcoNewsController {
     @DeleteMapping("/delete")
     public ResponseEntity<Long> delete(@RequestParam("id") Long id,
                                        @Parameter(hidden = true) @CurrentUser UserVO user) {
-        ecoNewsService.delete(id, user);
+        this.ecoNewsService.delete(id, user);
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
@@ -104,7 +104,7 @@ public class ManagementEcoNewsController {
      */
     @DeleteMapping("/deleteAll")
     public ResponseEntity<List<Long>> deleteAll(@RequestBody List<Long> listId) {
-        ecoNewsService.deleteAll(listId);
+        this.ecoNewsService.deleteAll(listId);
         return ResponseEntity.status(HttpStatus.OK).body(listId);
     }
 
@@ -126,7 +126,7 @@ public class ManagementEcoNewsController {
     public ResponseEntity<EcoNewsDto> getEcoNewsById(@PathVariable Long id,
                                                      @Parameter(hidden = true) @ValidLanguage Locale locale) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ecoNewsService.findDtoByIdAndLanguage(id, locale.getLanguage()));
+                .body(this.ecoNewsService.findDtoByIdAndLanguage(id, locale.getLanguage()));
     }
 
     /**
@@ -146,12 +146,12 @@ public class ManagementEcoNewsController {
     @GetMapping("/{id}")
     public String getEcoNewsPage(@PathVariable("id") Long id,
                                  @Parameter(hidden = true) Locale locale, Model model) {
-        EcoNewsDto econew = ecoNewsService.findDtoByIdAndLanguage(id, locale.getLanguage());
+        EcoNewsDto econew = this.ecoNewsService.findDtoByIdAndLanguage(id, locale.getLanguage());
         model.addAttribute("econew", econew);
         ZonedDateTime time = econew.getCreationDate();
         DateTimeFormatter format = DateTimeFormatter.ofPattern("MMM dd , yyyy");
         model.addAttribute("time", time.format(format));
-        model.addAttribute("ecoNewsTag", tagsService.findAllEcoNewsTags("en"));
+        model.addAttribute("ecoNewsTag", this.tagsService.findAllEcoNewsTags("en"));
         return "core/management_eco_new";
     }
 
@@ -162,7 +162,7 @@ public class ManagementEcoNewsController {
      */
     @GetMapping("/tags")
     public ResponseEntity<List<TagDto>> getAllEcoNewsTag() {
-        return ResponseEntity.status(HttpStatus.OK).body(tagsService.findAllEcoNewsTags("en"));
+        return ResponseEntity.status(HttpStatus.OK).body(this.tagsService.findAllEcoNewsTags("en"));
     }
 
     /**
@@ -184,7 +184,7 @@ public class ManagementEcoNewsController {
                                           BindingResult bindingResult, @ImageValidation @RequestParam(required = false,
             name = "file") MultipartFile file, @Parameter(hidden = true) Principal principal) {
         if (!bindingResult.hasErrors()) {
-            ecoNewsService.save(addEcoNewsDtoRequest, file, principal.getName());
+            this.ecoNewsService.save(addEcoNewsDtoRequest, file, principal.getName());
         }
         return buildGenericResponseDto(bindingResult);
     }
@@ -207,7 +207,7 @@ public class ManagementEcoNewsController {
                                      BindingResult bindingResult, @ImageValidation @RequestPart(required = false,
             name = "file") MultipartFile file) {
         if (!bindingResult.hasErrors()) {
-            ecoNewsService.update(ecoNewsDtoManagement, file);
+            this.ecoNewsService.update(ecoNewsDtoManagement, file);
         }
         return buildGenericResponseDto(bindingResult);
     }
@@ -227,7 +227,7 @@ public class ManagementEcoNewsController {
     @GetMapping("/{id}/likes")
     @ResponseBody
     public Set<UserVO> getLikesByEcoNewsId(@PathVariable Long id) {
-        return ecoNewsService.findUsersWhoLikedPost(id);
+        return this.ecoNewsService.findUsersWhoLikedPost(id);
     }
 
     /**
@@ -245,6 +245,6 @@ public class ManagementEcoNewsController {
     @GetMapping("/{id}/dislikes")
     @ResponseBody
     public Set<UserVO> getDislikesByEcoNewsId(@PathVariable Long id) {
-        return ecoNewsService.findUsersWhoDislikedPost(id);
+        return this.ecoNewsService.findUsersWhoDislikedPost(id);
     }
 }

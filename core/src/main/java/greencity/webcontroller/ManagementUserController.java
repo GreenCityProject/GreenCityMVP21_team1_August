@@ -56,10 +56,10 @@ public class ManagementUserController {
         @RequestParam(required = false, name = "query") String query,
         @CurrentUser UserVO currentUser,
         Model model, @ApiIgnore Pageable pageable) {
-        PageableDto<UserManagementVO> found = userService.getAllUsersByCriteria(query, role, status, pageable);
+        PageableDto<UserManagementVO> found = this.userService.getAllUsersByCriteria(query, role, status, pageable);
         model.addAttribute("users", found);
         model.addAttribute("paging", pageable);
-        model.addAttribute("filters", filterService.getAllFilters(currentUser.getId()));
+        model.addAttribute("filters", this.filterService.getAllFilters(currentUser.getId()));
         model.addAttribute("currentUser", currentUser);
 
         return "core/management_user";
@@ -74,7 +74,7 @@ public class ManagementUserController {
      */
     @PostMapping("/register")
     public String saveUser(@Valid UserManagementDto userDto) {
-        restClient.managementRegisterUser(userDto);
+        this.restClient.managementRegisterUser(userDto);
         return "redirect:/management/users";
     }
 
@@ -89,7 +89,7 @@ public class ManagementUserController {
     @ResponseBody
     public GenericResponseDto updateUser(@Valid @RequestBody UserManagementDto userDto, BindingResult bindingResult) {
         if (!bindingResult.hasErrors()) {
-            restClient.updateUser(userDto);
+            this.restClient.updateUser(userDto);
         }
         return buildGenericResponseDto(bindingResult);
     }
@@ -104,8 +104,8 @@ public class ManagementUserController {
     @GetMapping("/findById")
     @ResponseBody
     public UserManagementDto findById(@RequestParam("id") Long id) {
-        UserVO byId = restClient.findById(id);
-        return modelMapper.map(byId, UserManagementDto.class);
+        UserVO byId = this.restClient.findById(id);
+        return this.modelMapper.map(byId, UserManagementDto.class);
     }
 
     /**
@@ -121,7 +121,7 @@ public class ManagementUserController {
         @PathVariable Long id,
         @RequestBody Map<String, String> body) {
         Role role = Role.valueOf(body.get("role"));
-        restClient.updateRole(id, role);
+        this.restClient.updateRole(id, role);
     }
 
     /**
@@ -136,7 +136,7 @@ public class ManagementUserController {
     public ResponseEntity<ResponseEntity.BodyBuilder> deactivateUser(
         @RequestParam("id") Long id,
         @RequestBody @NotEmpty List<@Size(min = 9) String> userReasons) {
-        restClient.deactivateUser(id, userReasons);
+        this.restClient.deactivateUser(id, userReasons);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -149,7 +149,7 @@ public class ManagementUserController {
      */
     @GetMapping("/lang")
     public ResponseEntity<String> getUserLang(@RequestParam("id") Long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(restClient.getUserLang(id));
+        return ResponseEntity.status(HttpStatus.OK).body(this.restClient.getUserLang(id));
     }
 
     /**
@@ -161,7 +161,7 @@ public class ManagementUserController {
     @PostMapping("/activate")
     public ResponseEntity<ResponseEntity.BodyBuilder> setActivatedStatus(
         @RequestParam("id") Long id) {
-        restClient.setActivatedStatus(id);
+        this.restClient.setActivatedStatus(id);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -178,7 +178,8 @@ public class ManagementUserController {
     public ResponseEntity<List<String>> getReasonsOfDeactivation(
         @RequestParam("id") Long id,
         @RequestParam("admin") String adminLang) {
-        return ResponseEntity.status(HttpStatus.OK).body(restClient.getDeactivationReason(id, adminLang));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(this.restClient.getDeactivationReason(id, adminLang));
     }
 
     /**
@@ -191,7 +192,7 @@ public class ManagementUserController {
      */
     @PostMapping("/deactivateAll")
     public void deactivateAll(@RequestBody List<Long> listId) {
-        restClient.deactivateAllUsers(listId);
+        this.restClient.deactivateAllUsers(listId);
     }
 
     /**
@@ -204,7 +205,7 @@ public class ManagementUserController {
      */
     @PostMapping("/search")
     public String search(Model model, @ApiIgnore Pageable pageable, UserManagementViewDto userViewDto) {
-        PageableAdvancedDto<UserManagementVO> found = restClient.search(pageable, userViewDto);
+        PageableAdvancedDto<UserManagementVO> found = this.restClient.search(pageable, userViewDto);
         model.addAttribute("users", found);
         model.addAttribute("fields", userViewDto);
         model.addAttribute("paging", pageable);
@@ -221,7 +222,7 @@ public class ManagementUserController {
     @ResponseStatus(value = HttpStatus.OK)
     public void updateShoppingItem(@PathVariable("itemId") Long itemId,
         @PathVariable("habitId") Long habitId) {
-        habitAssignService.updateShoppingItem(habitId, itemId);
+        this.habitAssignService.updateShoppingItem(habitId, itemId);
     }
 
     /**
@@ -232,7 +233,7 @@ public class ManagementUserController {
      */
     @PostMapping(value = "/filter-save")
     public String saveUserFilter(@CurrentUser UserVO currentUser, UserFilterDtoRequest dto) {
-        filterService.save(currentUser.getId(), dto);
+        this.filterService.save(currentUser.getId(), dto);
         return "redirect:/management/users";
     }
 
@@ -244,7 +245,7 @@ public class ManagementUserController {
      */
     @GetMapping(value = "/select-filter/{id}")
     public String selectFilter(@PathVariable("id") Long id) {
-        UserFilterDtoResponse dto = filterService.getFilterById(id);
+        UserFilterDtoResponse dto = this.filterService.getFilterById(id);
         return "redirect:/management/users?role=" + dto.getUserRole() + "&query=" + dto.getSearchCriteria() + "&status="
             + dto.getUserStatus() + "&size=20&sort=id,DESC";
     }
@@ -256,7 +257,7 @@ public class ManagementUserController {
      */
     @GetMapping(value = "{id}/delete-filter")
     public String deleteUserFilter(@PathVariable("id") Long id) {
-        filterService.deleteFilterById(id);
+        this.filterService.deleteFilterById(id);
         return "redirect:/management/users?size=20&sort=id,DESC";
     }
 }

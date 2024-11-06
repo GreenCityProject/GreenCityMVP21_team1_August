@@ -57,10 +57,10 @@ public class ManagementHabitController {
         @RequestParam(value = "complexity", required = false) Integer complexity,
         @RequestParam(value = "withoutImage", required = false) Boolean withoutImage,
         @RequestParam(value = "withImage", required = false) Boolean withImage) {
-        PageableDto<HabitManagementDto> allHabits = managementHabitService.getAllHabitsDto(searchReg,
+        PageableDto<HabitManagementDto> allHabits = this.managementHabitService.getAllHabitsDto(searchReg,
             durationFrom, durationTo, complexity, withoutImage, withImage, pageable);
         model.addAttribute("pageable", allHabits);
-        model.addAttribute("languages", languageService.getAllLanguages());
+        model.addAttribute("languages", this.languageService.getAllLanguages());
         return "core/management_user_habits";
     }
 
@@ -80,7 +80,7 @@ public class ManagementHabitController {
     @GetMapping("/{id}/find")
     public ResponseEntity<HabitManagementDto> getHabitById(@PathVariable("id") Long id) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(managementHabitService.getById(id));
+            .body(this.managementHabitService.getById(id));
     }
 
     /**
@@ -101,15 +101,15 @@ public class ManagementHabitController {
     public String getHabitPage(@PathVariable("id") Long id,
         @ApiIgnore Pageable pageable,
         @ApiIgnore Locale locale, Model model) {
-        model.addAttribute("hfacts", habitFactService.getAllHabitFactsVO(pageable));
-        model.addAttribute("hshops", shoppingListItemService.getShoppingListByHabitId(id));
-        model.addAttribute("habit", managementHabitService.getById(id));
+        model.addAttribute("hfacts", this.habitFactService.getAllHabitFactsVO(pageable));
+        model.addAttribute("hshops", this.shoppingListItemService.getShoppingListByHabitId(id));
+        model.addAttribute("habit", this.managementHabitService.getById(id));
         model.addAttribute("acquired",
-            habitAssignService.getNumberHabitAssignsByHabitIdAndStatus(id, HabitAssignStatus.ACQUIRED));
+            this.habitAssignService.getNumberHabitAssignsByHabitIdAndStatus(id, HabitAssignStatus.ACQUIRED));
         model.addAttribute("inProgress",
-            habitAssignService.getNumberHabitAssignsByHabitIdAndStatus(id, HabitAssignStatus.INPROGRESS));
+            this.habitAssignService.getNumberHabitAssignsByHabitIdAndStatus(id, HabitAssignStatus.INPROGRESS));
         model.addAttribute("canceled",
-            habitAssignService.getNumberHabitAssignsByHabitIdAndStatus(id, HabitAssignStatus.CANCELLED));
+            this.habitAssignService.getNumberHabitAssignsByHabitIdAndStatus(id, HabitAssignStatus.CANCELLED));
         return "core/management_user_habit";
     }
 
@@ -135,7 +135,7 @@ public class ManagementHabitController {
         BindingResult bindingResult,
         @ImageValidation @RequestParam(required = false, name = "file") MultipartFile file) {
         if (!bindingResult.hasErrors()) {
-            managementHabitService.saveHabitAndTranslations(habitManagementDto, file);
+            this.managementHabitService.saveHabitAndTranslations(habitManagementDto, file);
         }
         return GenericResponseDto.buildGenericResponseDto(bindingResult);
     }
@@ -162,7 +162,7 @@ public class ManagementHabitController {
         BindingResult bindingResult,
         @ImageValidation @RequestParam(required = false, name = "file") MultipartFile file) {
         if (!bindingResult.hasErrors()) {
-            managementHabitService.update(habitManagementDto, file);
+            this.managementHabitService.update(habitManagementDto, file);
         }
         return GenericResponseDto.buildGenericResponseDto(bindingResult);
     }
@@ -181,7 +181,7 @@ public class ManagementHabitController {
     })
     @DeleteMapping("/delete")
     public ResponseEntity<Long> delete(@RequestParam("id") Long id) {
-        managementHabitService.delete(id);
+        this.managementHabitService.delete(id);
         return ResponseEntity.status(HttpStatus.OK).body(id);
     }
 
@@ -199,7 +199,7 @@ public class ManagementHabitController {
     })
     @DeleteMapping("/deleteAll")
     public ResponseEntity<List<Long>> deleteAll(@RequestBody List<Long> listId) {
-        managementHabitService.deleteAll(listId);
+        this.managementHabitService.deleteAll(listId);
         return ResponseEntity.status(HttpStatus.OK).body(listId);
     }
 }

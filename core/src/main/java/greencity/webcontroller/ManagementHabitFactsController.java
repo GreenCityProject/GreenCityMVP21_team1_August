@@ -50,7 +50,7 @@ public class ManagementHabitFactsController {
     @GetMapping("/find/{id}")
     public ResponseEntity<HabitFactDtoResponse> getHabitFactsById(
         @PathVariable("id") Long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(habitFactService.getHabitFactById(id));
+        return ResponseEntity.status(HttpStatus.OK).body(this.habitFactService.getHabitFactById(id));
     }
 
     /**
@@ -64,8 +64,8 @@ public class ManagementHabitFactsController {
     @GetMapping
     public String findAll(@RequestParam(required = false, name = "query") String filter,
         Model model, @ApiIgnore Pageable pageable) {
-        model.addAttribute("pageable", habitFactService.getAllHabitFactVOsWithFilter(filter, pageable));
-        model.addAttribute("languages", languageService.getAllLanguages());
+        model.addAttribute("pageable", this.habitFactService.getAllHabitFactVOsWithFilter(filter, pageable));
+        model.addAttribute("languages", this.languageService.getAllLanguages());
         return "core/management_habit_facts";
     }
 
@@ -87,7 +87,7 @@ public class ManagementHabitFactsController {
     public GenericResponseDto saveHabitFacts(@Valid @RequestBody HabitFactPostDto habitFactPostDto,
         BindingResult bindingResult) {
         if (!bindingResult.hasErrors()) {
-            habitFactService.save(habitFactPostDto);
+            this.habitFactService.save(habitFactPostDto);
         }
         return buildGenericResponseDto(bindingResult);
     }
@@ -110,7 +110,7 @@ public class ManagementHabitFactsController {
         BindingResult bindingResult,
         @PathVariable Long id) {
         if (!bindingResult.hasErrors()) {
-            habitFactService.update(habitFactUpdateDto, id);
+            this.habitFactService.update(habitFactUpdateDto, id);
         }
         return buildGenericResponseDto(bindingResult);
     }
@@ -131,7 +131,7 @@ public class ManagementHabitFactsController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Long> delete(@PathVariable("id") Long id) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(habitFactService.delete(id));
+            .body(this.habitFactService.delete(id));
     }
 
     /**
@@ -150,7 +150,7 @@ public class ManagementHabitFactsController {
     @DeleteMapping("/deleteAll")
     public ResponseEntity<List<Long>> deleteAll(@RequestBody List<Long> listId) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(habitFactService.deleteAllHabitFactsByListOfId(listId));
+            .body(this.habitFactService.deleteAllHabitFactsByListOfId(listId));
     }
 
     /**
@@ -170,11 +170,11 @@ public class ManagementHabitFactsController {
         @ApiIgnore Pageable pageable,
         HabitFactViewDto habitFactViewDto) {
         PageableDto<HabitFactVO> pageableDto =
-            habitFactService.getFilteredDataForManagementByPage(
+            this.habitFactService.getFilteredDataForManagementByPage(
                 pageable,
                 habitFactViewDto);
         model.addAttribute("pageable", pageableDto);
-        model.addAttribute("languages", languageService.getAllLanguages());
+        model.addAttribute("languages", this.languageService.getAllLanguages());
         model.addAttribute("fields", habitFactViewDto);
         return "core/management_habit_facts";
     }

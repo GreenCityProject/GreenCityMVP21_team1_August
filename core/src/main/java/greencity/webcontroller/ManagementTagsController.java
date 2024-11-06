@@ -42,8 +42,8 @@ public class ManagementTagsController {
     @GetMapping
     public String findAll(Model model, Pageable pageable,
         @RequestParam(required = false) String filter) {
-        PageableAdvancedDto<TagVO> tags = tagsService.findAll(pageable, filter);
-        List<LanguageDTO> languages = languageService.getAllLanguages();
+        PageableAdvancedDto<TagVO> tags = this.tagsService.findAll(pageable, filter);
+        List<LanguageDTO> languages = this.languageService.getAllLanguages();
         List<TagType> tagTypes = Arrays.asList(TagType.values());
 
         model.addAttribute("tags", tags);
@@ -64,7 +64,7 @@ public class ManagementTagsController {
     public GenericResponseDto save(@Valid @RequestBody TagPostDto tagPostDto,
         BindingResult bindingResult) {
         if (!bindingResult.hasErrors()) {
-            tagsService.save(tagPostDto);
+            this.tagsService.save(tagPostDto);
         }
 
         return buildGenericResponseDto(bindingResult);
@@ -79,7 +79,7 @@ public class ManagementTagsController {
     @GetMapping("/{id}")
     public ResponseEntity<TagVO> findById(@PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(tagsService.findById(id));
+            .body(this.tagsService.findById(id));
     }
 
     /**
@@ -91,7 +91,7 @@ public class ManagementTagsController {
     @DeleteMapping
     public ResponseEntity<List<Long>> bulkDelete(@RequestBody List<Long> ids) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(tagsService.bulkDelete(ids));
+            .body(this.tagsService.bulkDelete(ids));
     }
 
     /**
@@ -103,7 +103,7 @@ public class ManagementTagsController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Long> deleteById(@PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(tagsService.deleteById(id));
+            .body(this.tagsService.deleteById(id));
     }
 
     /**
@@ -118,7 +118,7 @@ public class ManagementTagsController {
     public GenericResponseDto updateTag(@Valid @RequestBody TagPostDto tagPostDto, BindingResult bindingResult,
         @PathVariable Long id) {
         if (!bindingResult.hasErrors()) {
-            tagsService.update(tagPostDto, id);
+            this.tagsService.update(tagPostDto, id);
         }
 
         return buildGenericResponseDto(bindingResult);
@@ -134,10 +134,10 @@ public class ManagementTagsController {
      */
     @PostMapping("/search")
     public String search(Model model, @ApiIgnore Pageable pageable, TagViewDto tagViewDto) {
-        PageableAdvancedDto<TagVO> foundTags = tagsService.search(pageable, tagViewDto);
+        PageableAdvancedDto<TagVO> foundTags = this.tagsService.search(pageable, tagViewDto);
 
         model.addAttribute("tags", foundTags);
-        model.addAttribute("languages", languageService.getAllLanguages());
+        model.addAttribute("languages", this.languageService.getAllLanguages());
         model.addAttribute("fields", tagViewDto);
 
         return "core/management_tags";

@@ -32,9 +32,9 @@ public class ManagementHabitShoppingListItemController {
     @GetMapping("")
     public String getAllShoppingListItems(@RequestParam("habitId") Long id, Model model, Pageable pageable) {
         model.addAttribute("shoppingListItems",
-            shoppingListItemService.findAllShoppingListItemsForManagementPageNotContained(id, pageable));
+            this.shoppingListItemService.findAllShoppingListItemsForManagementPageNotContained(id, pageable));
         model.addAttribute("habitId", id);
-        model.addAttribute("currentShoppingListItems", shoppingListItemService.getShoppingListByHabitId(id));
+        model.addAttribute("currentShoppingListItems", this.shoppingListItemService.getShoppingListByHabitId(id));
         return "core/management_habit_shopping_list_item";
     }
 
@@ -50,7 +50,7 @@ public class ManagementHabitShoppingListItemController {
     public ResponseEntity<List<Long>> deleteAllShoppingListItem(@RequestParam("habitId") Long habitId,
         @RequestBody List<Long> listId) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(habitService.deleteAllShoppingListItemsByListOfId(habitId, listId));
+            .body(this.habitService.deleteAllShoppingListItemsByListOfId(habitId, listId));
     }
 
     /**
@@ -66,7 +66,7 @@ public class ManagementHabitShoppingListItemController {
     public ResponseEntity<List<Long>> addAllShoppingListItem(@RequestParam("habitId") Long habitId,
         @RequestBody List<Long> listId) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(habitService.addAllShoppingListItemsByListOfId(habitId, listId));
+            .body(this.habitService.addAllShoppingListItemsByListOfId(habitId, listId));
     }
 
     /**
@@ -82,7 +82,7 @@ public class ManagementHabitShoppingListItemController {
     @DeleteMapping("/delete/")
     public ResponseEntity<Long> deleteShoppingListItem(@RequestParam("habitId") Long habitId,
         @RequestParam("itemId") Long itemId) {
-        habitService.deleteShoppingListItem(habitId, itemId);
+        this.habitService.deleteShoppingListItem(habitId, itemId);
         return ResponseEntity.status(HttpStatus.OK).body(itemId);
     }
 
@@ -97,7 +97,7 @@ public class ManagementHabitShoppingListItemController {
     @PostMapping("/add/")
     public ResponseEntity<Long> addShoppingListItemToHabit(@RequestParam("habitId") Long habitId,
         @RequestParam("itemId") Long itemId) {
-        habitService.addShoppingListItemToHabit(habitId, itemId);
+        this.habitService.addShoppingListItemToHabit(habitId, itemId);
         return ResponseEntity.status(HttpStatus.OK).body(itemId);
     }
 }

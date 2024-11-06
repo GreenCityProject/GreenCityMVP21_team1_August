@@ -17,11 +17,11 @@ public class LanguageValidator implements ConstraintValidator<ValidLanguage, Loc
 
     @Override
     public void initialize(ValidLanguage constraintAnnotation) {
-        codes = languageService.findAllLanguageCodes();
+        this.codes = this.languageService.findAllLanguageCodes();
     }
 
     @Override
     public boolean isValid(Locale value, ConstraintValidatorContext context) {
-        return codes.contains(value.getLanguage());
+        return this.codes.contains(value.getLanguage());
     }
 }

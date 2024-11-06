@@ -45,10 +45,10 @@ public class ManagementShoppingListItemsController {
         Model model) {
         Pageable paging = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("id").ascending());
         PageableAdvancedDto<ShoppingListItemManagementDto> pageableDto = query == null || query.isEmpty()
-            ? shoppingListItemService.findShoppingListItemsForManagementByPage(paging)
-            : shoppingListItemService.searchBy(paging, query);
+            ? this.shoppingListItemService.findShoppingListItemsForManagementByPage(paging)
+            : this.shoppingListItemService.searchBy(paging, query);
         model.addAttribute("shoppingListItems", pageableDto);
-        model.addAttribute("languages", languageService.getAllLanguages());
+        model.addAttribute("languages", this.languageService.getAllLanguages());
         return "core/management_shopping_list_items";
     }
 
@@ -64,7 +64,7 @@ public class ManagementShoppingListItemsController {
     public GenericResponseDto save(@Valid @RequestBody ShoppingListItemPostDto shoppingListItemPostDto,
         BindingResult bindingResult) {
         if (!bindingResult.hasErrors()) {
-            shoppingListItemService.saveShoppingListItem(shoppingListItemPostDto);
+            this.shoppingListItemService.saveShoppingListItem(shoppingListItemPostDto);
         }
         return GenericResponseDto.buildGenericResponseDto(bindingResult);
     }
@@ -81,7 +81,7 @@ public class ManagementShoppingListItemsController {
     public GenericResponseDto update(
         @Valid @RequestBody ShoppingListItemPostDto shoppingListItemPostDto, BindingResult bindingResult) {
         if (!bindingResult.hasErrors()) {
-            shoppingListItemService.update(shoppingListItemPostDto);
+            this.shoppingListItemService.update(shoppingListItemPostDto);
         }
         return buildGenericResponseDto(bindingResult);
     }
@@ -95,7 +95,7 @@ public class ManagementShoppingListItemsController {
     @GetMapping("/{id}")
     public ResponseEntity<ShoppingListItemResponseDto> getShoppingListItemById(
         @PathVariable("id") Long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(shoppingListItemService.findShoppingListItemById(id));
+        return ResponseEntity.status(HttpStatus.OK).body(this.shoppingListItemService.findShoppingListItemById(id));
     }
 
     /**
@@ -107,7 +107,7 @@ public class ManagementShoppingListItemsController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> delete(@PathVariable Long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(shoppingListItemService.delete(id));
+        return ResponseEntity.status(HttpStatus.OK).body(this.shoppingListItemService.delete(id));
     }
 
     /**
@@ -122,7 +122,7 @@ public class ManagementShoppingListItemsController {
     @ResponseBody
     public ResponseEntity<List<Long>> deleteAll(@RequestBody List<Long> listId) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(shoppingListItemService.deleteAllShoppingListItemsByListOfId(listId));
+            .body(this.shoppingListItemService.deleteAllShoppingListItemsByListOfId(listId));
     }
 
     /**
@@ -134,7 +134,7 @@ public class ManagementShoppingListItemsController {
     @DeleteMapping("/unlink/{habitId}")
     @ResponseBody
     public ResponseEntity<Long> unlinkShoppingListItems(@RequestBody List<Long> shopIds, @PathVariable Long habitId) {
-        habitShoppingListItemService.unlinkShoppingListItems(shopIds, habitId);
+        this.habitShoppingListItemService.unlinkShoppingListItems(shopIds, habitId);
         return ResponseEntity.status(HttpStatus.OK).body(habitId);
     }
 
@@ -149,11 +149,11 @@ public class ManagementShoppingListItemsController {
     public String filterData(Model model, @PageableDefault(value = 20) @ApiIgnore Pageable pageable,
         ShoppingListItemViewDto goal) {
         PageableAdvancedDto<ShoppingListItemManagementDto> pageableDto =
-            shoppingListItemService.getFilteredDataForManagementByPage(
+            this.shoppingListItemService.getFilteredDataForManagementByPage(
                 pageable,
                 goal);
         model.addAttribute("shoppingListItems", pageableDto);
-        model.addAttribute("languages", languageService.getAllLanguages());
+        model.addAttribute("languages", this.languageService.getAllLanguages());
         model.addAttribute("fields", goal);
         return "core/management_shopping_list_items";
     }
