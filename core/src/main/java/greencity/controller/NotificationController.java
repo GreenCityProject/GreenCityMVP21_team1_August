@@ -38,7 +38,8 @@ public class NotificationController {
     @GetMapping("/unread")
     public ResponseEntity<List<NotificationDto>> getUnreadNotifications(
             @Parameter(hidden = true) @CurrentUser UserVO currentUser) {
-        List<NotificationDto> notifications = notificationService.findAllByUserIdAndIsReadFalse(currentUser.getId());
+        List<NotificationDto> notifications =
+                this.notificationService.findAllByUserIdAndIsReadFalse(currentUser.getId());
         return ResponseEntity.ok(notifications);
     }
 
@@ -57,7 +58,8 @@ public class NotificationController {
     @GetMapping("/all")
     public ResponseEntity<List<NotificationDto>> getAllNotifications(
             @Parameter(hidden = true) @CurrentUser UserVO currentUser) {
-        List<NotificationDto> notifications = notificationService.findAllByUserId(currentUser.getId());
+        List<NotificationDto> notifications =
+                this.notificationService.findAllByUserId(currentUser.getId());
         return ResponseEntity.ok(notifications);
     }
 
@@ -77,7 +79,7 @@ public class NotificationController {
     @PostMapping("/markAsViewed/{id}")
     @PreAuthorize("@notificationServiceImpl.isOwner(#id, #currentUser.id)")
     public ResponseEntity<Void> markAsViewed(@PathVariable Long id, @Parameter(hidden = true) @CurrentUser UserVO currentUser) {
-        notificationService.markAsReadNotification(id);
+        this.notificationService.markAsReadNotification(id);
         return ResponseEntity.ok().build();
     }
 
@@ -96,7 +98,7 @@ public class NotificationController {
     @GetMapping("/topThree")
     public ResponseEntity<List<NotificationDto>> getFirstThreeNotifications(
             @Parameter(hidden = true) @CurrentUser UserVO currentUser) {
-        List<NotificationDto> notifications = notificationService.getFirstThreeNotifications(currentUser.getId());
+        List<NotificationDto> notifications = this.notificationService.getFirstThreeNotifications(currentUser.getId());
         return ResponseEntity.ok(notifications);
     }
 
@@ -117,7 +119,7 @@ public class NotificationController {
     public ResponseEntity<List<NotificationDto>> getNotificationsSortedByReceivedTime(
             @Parameter(hidden = true) @CurrentUser UserVO currentUser,
             @RequestParam boolean ascending) {
-        List<NotificationDto> notifications = notificationService.getNotificationsSortedByReceivedTime(currentUser.getId(), ascending);
+        List<NotificationDto> notifications = this.notificationService.getNotificationsSortedByReceivedTime(currentUser.getId(), ascending);
         return ResponseEntity.ok(notifications);
     }
 
@@ -129,7 +131,7 @@ public class NotificationController {
     })
     @PostMapping("/save")
     public ResponseEntity<NotificationResponseDto> saveNotification(@RequestBody NotificationDto notificationDto) {
-        NotificationResponseDto responseDto = notificationService.save(notificationDto);
+        NotificationResponseDto responseDto = this.notificationService.save(notificationDto);
         return ResponseEntity.ok(responseDto);
     }
 }

@@ -10,7 +10,6 @@ import greencity.constant.HttpStatuses;
 import greencity.dto.user.UserVO;
 import greencity.exception.handler.MessageResponse;
 import greencity.service.EventService;
-import greencity.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import greencity.constant.SwaggerExampleModel;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -23,7 +22,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.Set;
@@ -35,8 +33,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EventController {
     private final EventService eventService;
-    private final UserService userService;
-
 
     @Operation(summary = "Create new event.")
     @ResponseStatus(value = HttpStatus.CREATED)
@@ -161,7 +157,7 @@ public class EventController {
     })
     @GetMapping
     public ResponseEntity<Set<EventDto>> getAll() {
-        return ResponseEntity.status(HttpStatus.OK).body(eventService.findAll());
+        return ResponseEntity.status(HttpStatus.OK).body(this.eventService.findAll());
     }
 
     /**
@@ -179,13 +175,8 @@ public class EventController {
     })
     @GetMapping("/{userId}")
     public ResponseEntity<Set<EventDto>> getAllEventsByUser(@PathVariable Long userId) {
-        return ResponseEntity.status(HttpStatus.OK).body(eventService.findAllByUserId(userId));
-    }
-
-    public boolean isPermitted(long userId) {
-        String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        UserVO user = userService.findByEmail(email);
-        return user.getId() == userId;
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(this.eventService.findAllByUserId(userId));
     }
 
     @Operation(summary = "Delete event")
@@ -197,7 +188,7 @@ public class EventController {
     @DeleteMapping("/{eventId}")
     public ResponseEntity<Object> delete(@PathVariable Long eventId,
                                          @CurrentUser UserVO currentUser) {
-        eventService.delete(eventId, currentUser.getId());
+        this.eventService.delete(eventId, currentUser.getId());
         return ResponseEntity.status(HttpStatus.OK).body(MessageResponse.builder()
                 .message(AppConstant.DELETED).success(true).build());
     }
@@ -213,6 +204,7 @@ public class EventController {
                                            @RequestPart @Valid EventEditDto eventEditDto,
                                            @RequestPart MultipartFile[] images,
                                            @CurrentUser UserVO currentUser) {
-        return ResponseEntity.status(HttpStatus.OK).body(eventService.update(eventEditDto, currentUser.getId(), eventId, images));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(this.eventService.update(eventEditDto, currentUser.getId(), eventId, images));
     }
 }

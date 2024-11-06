@@ -42,7 +42,8 @@ public class SearchController {
     public ResponseEntity<SearchResponseDto> search(
             @Parameter(description = "Query to search") @RequestParam String searchQuery,
             @Parameter(hidden = true) @ValidLanguage Locale locale) {
-        return ResponseEntity.status(HttpStatus.OK).body(searchService.search(searchQuery, locale.getLanguage()));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(this.searchService.search(searchQuery, locale.getLanguage()));
     }
 
     /**
@@ -64,6 +65,6 @@ public class SearchController {
         @Parameter(description = "Query to search") @RequestParam String searchQuery,
         @Parameter(hidden = true) @ValidLanguage Locale locale) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(searchService.searchAllNews(pageable, searchQuery, locale.getLanguage()));
+            .body(this.searchService.searchAllNews(pageable, searchQuery, locale.getLanguage()));
     }
 }

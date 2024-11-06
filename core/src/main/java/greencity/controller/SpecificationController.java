@@ -31,6 +31,6 @@ public class SpecificationController {
     })
     @GetMapping
     public ResponseEntity<List<SpecificationNameDto>> findAllSpecification() {
-        return ResponseEntity.status(HttpStatus.OK).body(specificationService.findAllSpecificationDto());
+        return ResponseEntity.status(HttpStatus.OK).body(this.specificationService.findAllSpecificationDto());
     }
 }

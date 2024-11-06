@@ -149,9 +149,9 @@ public final class ErrorMessage {
     public static final String NOTIFICATION_ALREADY_READ = "Notification already read";
     public static final String COMMENT_NOT_FOUND_BY_ID = "Comment not found by id: ";
     public static final String INVALID_COMMENT_ID = "Invalid comment id";
-    public static final Object USER_ALREADY_JOINED_EVENT = "User already joined event : ";
-    public static final Object AUTHOR_CANNOT_LEAVE_EVENT = "Author cannot leave event :";
-
+    public static final String USER_ALREADY_JOINED_EVENT = "User already joined event : ";
+    public static final String AUTHOR_CANNOT_LEAVE_EVENT = "Author cannot leave event :";
+    public static final String NO_CHARACTER_ENTERED = "You should enter at least one parameter";
 
     private ErrorMessage() {
     }

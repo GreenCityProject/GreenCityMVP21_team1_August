@@ -62,7 +62,7 @@ public class EventCommentController {
             @Parameter(hidden = true) @CurrentUser UserVO user) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(eventCommentService.addComment(eventId, commentDto, user));
+                .body(this.eventCommentService.addComment(eventId, commentDto, user));
     }
 
     /**
@@ -81,7 +81,7 @@ public class EventCommentController {
     })
     @GetMapping("{eventId}")
     public ResponseEntity<List<AddEventCommentDtoResponse>> getCommentsByEventId(@PathVariable Long eventId) {
-        return ResponseEntity.ok(eventCommentService.getCommentsByEventId(eventId));
+        return ResponseEntity.ok(this.eventCommentService.getCommentsByEventId(eventId));
     }
 
     /**
@@ -99,7 +99,7 @@ public class EventCommentController {
     })
     @GetMapping("{commentId}/details")
     public ResponseEntity<AddEventCommentDtoResponse> getCommentById(@PathVariable Long commentId) {
-        return ResponseEntity.ok(eventCommentService.getCommentById(commentId));
+        return ResponseEntity.ok(this.eventCommentService.getCommentById(commentId));
     }
 
     /**
@@ -115,7 +115,7 @@ public class EventCommentController {
     })
     @GetMapping("{eventId}/count")
     public ResponseEntity<Long> showQuantityOfAddedComments(@PathVariable Long eventId) {
-        return ResponseEntity.ok(eventCommentService.showQuantityOfAddedComments(eventId));
+        return ResponseEntity.ok(this.eventCommentService.showQuantityOfAddedComments(eventId));
     }
 
     @Operation(summary = "Update reply to comment")

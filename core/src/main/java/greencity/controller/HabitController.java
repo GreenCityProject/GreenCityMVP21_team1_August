@@ -61,7 +61,7 @@ public class HabitController {
     public ResponseEntity<HabitDto> getHabitById(@PathVariable Long id,
         @Parameter(hidden = true) @ValidLanguage Locale locale) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(habitService.getByIdAndLanguageCode(id, locale.getLanguage()));
+            .body(this.habitService.getByIdAndLanguageCode(id, locale.getLanguage()));
     }
 
     /**
@@ -84,7 +84,7 @@ public class HabitController {
         @Parameter(hidden = true) @ValidLanguage Locale locale,
         @Parameter(hidden = true) Pageable pageable) {
         return ResponseEntity.status(HttpStatus.OK).body(
-            habitService.getAllHabitsByLanguageCode(userVO, pageable, locale.getLanguage()));
+            this.habitService.getAllHabitsByLanguageCode(userVO, pageable, locale.getLanguage()));
     }
 
     /**
@@ -105,7 +105,7 @@ public class HabitController {
         @PathVariable Long id,
         @Parameter(hidden = true) @ValidLanguage Locale locale) {
         return ResponseEntity.status(HttpStatus.OK).body(
-            habitService.getShoppingListForHabit(id, locale.getLanguage()));
+            this.habitService.getShoppingListForHabit(id, locale.getLanguage()));
     }
 
     /**
@@ -128,7 +128,7 @@ public class HabitController {
         @RequestParam List<String> tags,
         @Parameter(hidden = true) Pageable pageable) {
         return ResponseEntity.status(HttpStatus.OK).body(
-            habitService.getAllByTagsAndLanguageCode(pageable, tags, locale.getLanguage()));
+            this.habitService.getAllByTagsAndLanguageCode(pageable, tags, locale.getLanguage()));
     }
 
     /**
@@ -157,29 +157,11 @@ public class HabitController {
         @RequestParam(required = false, name = "isCustomHabit") Optional<Boolean> isCustomHabit,
         @RequestParam(required = false, name = "complexities") Optional<List<Integer>> complexities,
         @Parameter(hidden = true) Pageable pageable) throws BadRequestException {
-        if (isValid(tags, isCustomHabit, complexities)) {
-            return ResponseEntity.status(HttpStatus.OK).body(
-                habitService.getAllByDifferentParameters(userVO, pageable, tags,
-                    isCustomHabit, complexities, locale.getLanguage()));
-        } else {
-            throw new BadRequestException("You should enter at least one parameter");
-        }
-    }
-
-    /**
-     * Method checks if at least one of the input parameters (tags, isCustomHabit,
-     * complexities) is present.
-     *
-     * @param tags          {@link List} of {@link String}.
-     * @param isCustomHabit {@link Boolean} value.
-     * @param complexities  {@link List} of {@link Integer}.
-     *
-     * @author Lilia Mokhnatska
-     */
-    private boolean isValid(Optional<List<String>> tags, Optional<Boolean> isCustomHabit,
-        Optional<List<Integer>> complexities) {
-        return ((tags.isPresent() && !tags.get().isEmpty()) || isCustomHabit.isPresent()
-            || (complexities.isPresent() && !complexities.get().isEmpty()));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(this.habitService.getAllByDifferentParameters(
+                        userVO, pageable,
+                        tags, isCustomHabit,
+                        complexities, locale.getLanguage()));
     }
 
     /**
@@ -196,7 +178,8 @@ public class HabitController {
     @GetMapping("/tags")
     @ApiLocale
     public ResponseEntity<List<String>> findAllHabitsTags(@Parameter(hidden = true) @ValidLanguage Locale locale) {
-        return ResponseEntity.status(HttpStatus.OK).body(tagsService.findAllHabitsTags(locale.getLanguage()));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(this.tagsService.findAllHabitsTags(locale.getLanguage()));
     }
 
     /**
@@ -223,7 +206,7 @@ public class HabitController {
         @Parameter(hidden = true) Principal principal) {
         return ResponseEntity
             .status(HttpStatus.CREATED)
-            .body(habitService.addCustomHabit(request, image, principal.getName()));
+            .body(this.habitService.addCustomHabit(request, image, principal.getName()));
     }
 
     /**
@@ -248,6 +231,6 @@ public class HabitController {
         @PathVariable Long habitId,
         @Parameter(hidden = true) @CurrentUser UserVO userVO) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(habitService.getFriendsAssignedToHabitProfilePictures(habitId, userVO.getId()));
+            .body(this.habitService.getFriendsAssignedToHabitProfilePictures(habitId, userVO.getId()));
     }
 }

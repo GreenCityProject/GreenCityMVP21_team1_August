@@ -50,7 +50,7 @@ public class HabitFactController {
     public LanguageTranslationDTO getRandomFactByHabitId(
         @PathVariable Long habitId,
         @Parameter(hidden = true) @ValidLanguage Locale locale) {
-        return habitFactService.getRandomHabitFactByHabitIdAndLanguage(habitId, locale.getLanguage());
+        return this.habitFactService.getRandomHabitFactByHabitIdAndLanguage(habitId, locale.getLanguage());
     }
 
     /**
@@ -70,7 +70,7 @@ public class HabitFactController {
     @GetMapping("/dayFact/{languageId}")
     public LanguageTranslationDTO getHabitFactOfTheDay(
         @PathVariable Long languageId) {
-        return habitFactService.getHabitFactOfTheDay(languageId);
+        return this.habitFactService.getHabitFactOfTheDay(languageId);
     }
 
     /**
@@ -91,7 +91,7 @@ public class HabitFactController {
     public ResponseEntity<PageableDto<LanguageTranslationDTO>> getAll(@Parameter(hidden = true) Pageable page,
         @Parameter(hidden = true) @ValidLanguage Locale locale) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(habitFactService.getAllHabitFacts(page, locale.getLanguage()));
+            .body(this.habitFactService.getAllHabitFacts(page, locale.getLanguage()));
     }
 
     /**
@@ -113,7 +113,7 @@ public class HabitFactController {
     @PostMapping
     public ResponseEntity<HabitFactDtoResponse> save(@Valid @RequestBody HabitFactPostDto fact) {
         return ResponseEntity.status(HttpStatus.CREATED).body(
-            mapper.map(habitFactService.save(fact), HabitFactDtoResponse.class));
+            this.mapper.map(this.habitFactService.save(fact), HabitFactDtoResponse.class));
     }
 
     /**
@@ -135,7 +135,7 @@ public class HabitFactController {
     public ResponseEntity<HabitFactPostDto> update(
         @Valid @RequestBody HabitFactUpdateDto dto, @PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(mapper.map(habitFactService.update(dto, id), HabitFactPostDto.class));
+            .body(this.mapper.map(this.habitFactService.update(dto, id), HabitFactPostDto.class));
     }
 
     /**
@@ -154,7 +154,7 @@ public class HabitFactController {
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> delete(@PathVariable Long id) {
-        habitFactService.delete(id);
+        this.habitFactService.delete(id);
         return ResponseEntity.ok().build();
     }
 }

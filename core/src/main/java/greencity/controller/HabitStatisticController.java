@@ -47,7 +47,8 @@ public class HabitStatisticController {
     })
     public ResponseEntity<GetHabitStatisticDto> findAllByHabitId(
         @PathVariable Long habitId) {
-        return ResponseEntity.status(HttpStatus.OK).body(habitStatisticService.findAllStatsByHabitId(habitId));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(this.habitStatisticService.findAllStatsByHabitId(habitId));
     }
 
     /**
@@ -66,7 +67,7 @@ public class HabitStatisticController {
     public ResponseEntity<List<HabitStatisticDto>> findAllStatsByHabitAssignId(
         @PathVariable Long habitAssignId) {
         return ResponseEntity.status(HttpStatus.OK).body(
-            habitStatisticService.findAllStatsByHabitAssignId(habitAssignId));
+            this.habitStatisticService.findAllStatsByHabitAssignId(habitAssignId));
     }
 
     /**
@@ -94,7 +95,7 @@ public class HabitStatisticController {
         @Parameter(hidden = true) @CurrentUser UserVO userVO,
         @PathVariable Long habitId) {
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(habitStatisticService.saveByHabitIdAndUserId(habitId, userVO.getId(), addHabitStatisticDto));
+            .body(this.habitStatisticService.saveByHabitIdAndUserId(habitId, userVO.getId(), addHabitStatisticDto));
     }
 
     /**
@@ -119,7 +120,7 @@ public class HabitStatisticController {
         @PathVariable Long id,
         @Parameter(hidden = true) @CurrentUser UserVO userVO,
         @Valid @RequestBody UpdateHabitStatisticDto habitStatisticForUpdateDto) {
-        return ResponseEntity.status(HttpStatus.OK).body(habitStatisticService
+        return ResponseEntity.status(HttpStatus.OK).body(this.habitStatisticService
             .update(id, userVO.getId(), habitStatisticForUpdateDto));
     }
 
@@ -145,7 +146,7 @@ public class HabitStatisticController {
     public ResponseEntity<List<HabitItemsAmountStatisticDto>> getTodayStatisticsForAllHabitItems(
         @Parameter(hidden = true) @ValidLanguage Locale locale) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(habitStatisticService.getTodayStatisticsForAllHabitItems(locale.getLanguage()));
+            .body(this.habitStatisticService.getTodayStatisticsForAllHabitItems(locale.getLanguage()));
     }
 
     /**
@@ -163,7 +164,7 @@ public class HabitStatisticController {
     @GetMapping("acquired/count")
     public ResponseEntity<Long> findAmountOfAcquiredHabits(@RequestParam Long userId) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(habitStatisticService.getAmountOfAcquiredHabitsByUserId(userId));
+            .body(this.habitStatisticService.getAmountOfAcquiredHabitsByUserId(userId));
     }
 
     /**
@@ -182,6 +183,6 @@ public class HabitStatisticController {
     @GetMapping("in-progress/count")
     public ResponseEntity<Long> findAmountOfHabitsInProgress(@RequestParam Long userId) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(habitStatisticService.getAmountOfHabitsInProgressByUserId(userId));
+            .body(this.habitStatisticService.getAmountOfHabitsInProgressByUserId(userId));
     }
 }

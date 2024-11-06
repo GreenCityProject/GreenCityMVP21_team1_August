@@ -52,7 +52,7 @@ public class EcoNewsController {
     })
     @GetMapping("/newest")
     public ResponseEntity<List<EcoNewsDto>> getThreeLastEcoNews() {
-        return ResponseEntity.status(HttpStatus.OK).body(ecoNewsService.getThreeLastEcoNews());
+        return ResponseEntity.status(HttpStatus.OK).body(this.ecoNewsService.getThreeLastEcoNews());
     }
 
     /**
@@ -75,7 +75,7 @@ public class EcoNewsController {
             @RequestPart(required = false) MultipartFile image,
             @Parameter(hidden = true) Principal principal) {
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                ecoNewsService.saveEcoNews(addEcoNewsDtoRequest, image, principal.getName()));
+                this.ecoNewsService.saveEcoNews(addEcoNewsDtoRequest, image, principal.getName()));
     }
 
     /**
@@ -98,7 +98,7 @@ public class EcoNewsController {
     public ResponseEntity<String> uploadImage(
             @Parameter(description = "Image of eco news") @ImageValidation MultipartFile image) {
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                ecoNewsService.uploadImage(image));
+                this.ecoNewsService.uploadImage(image));
     }
 
     /**
@@ -119,7 +119,7 @@ public class EcoNewsController {
     public ResponseEntity<String[]> uploadImages(
             @Parameter(description = "Array of eco news images") MultipartFile[] images) {
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                ecoNewsService.uploadImages(images));
+                this.ecoNewsService.uploadImages(images));
     }
 
     /**
@@ -134,7 +134,7 @@ public class EcoNewsController {
     })
     @DeleteMapping("/deleteImage")
     public void deleteImage(@RequestParam String imagePath) {
-        fileService.delete(imagePath);
+        this.fileService.delete(imagePath);
     }
 
     /**
@@ -160,7 +160,7 @@ public class EcoNewsController {
                     required = false) MultipartFile image,
             @Parameter(hidden = true) @CurrentUser UserVO user) {
         return ResponseEntity.status(HttpStatus.OK).body(
-                ecoNewsService.update(updateEcoNewsDto, image, user));
+                this.ecoNewsService.update(updateEcoNewsDto, image, user));
     }
 
     /**
@@ -180,7 +180,7 @@ public class EcoNewsController {
     public ResponseEntity<EcoNewsDto> getEcoNewsById(@PathVariable Long id,
                                                      @Parameter(hidden = true) @ValidLanguage Locale locale) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ecoNewsService.findDtoByIdAndLanguage(id, locale.getLanguage()));
+                .body(this.ecoNewsService.findDtoByIdAndLanguage(id, locale.getLanguage()));
     }
 
     /**
@@ -197,7 +197,7 @@ public class EcoNewsController {
     @GetMapping("/byUser")
     public ResponseEntity<List<EcoNewsDto>> getEcoNewsByUser(@Parameter(hidden = true) @CurrentUser UserVO user) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(ecoNewsService.getAllPublishedNewsByUser(user));
+                .body(this.ecoNewsService.getAllPublishedNewsByUser(user));
     }
 
     /**
@@ -214,7 +214,7 @@ public class EcoNewsController {
     @GetMapping("")
     @ApiPageable
     public ResponseEntity<PageableAdvancedDto<EcoNewsGenericDto>> findAll(@Parameter(hidden = true) Pageable page) {
-        return ResponseEntity.status(HttpStatus.OK).body(ecoNewsService.findGenericAll(page));
+        return ResponseEntity.status(HttpStatus.OK).body(this.ecoNewsService.findGenericAll(page));
     }
 
     /**
@@ -233,7 +233,7 @@ public class EcoNewsController {
     public ResponseEntity<PageableAdvancedDto<EcoNewsGenericDto>> getEcoNewsByUserByPage(
             @Parameter(hidden = true) @CurrentUser UserVO user,
             @Parameter(hidden = true) Pageable page) {
-        return ResponseEntity.status(HttpStatus.OK).body(ecoNewsService.findAllByUser(user, page));
+        return ResponseEntity.status(HttpStatus.OK).body(this.ecoNewsService.findAllByUser(user, page));
     }
 
     /**
@@ -252,7 +252,7 @@ public class EcoNewsController {
     @DeleteMapping("/{econewsId}")
     public ResponseEntity<Object> delete(@PathVariable Long econewsId,
                                          @Parameter(hidden = true) @CurrentUser UserVO user) {
-        ecoNewsService.delete(econewsId, user);
+        this.ecoNewsService.delete(econewsId, user);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 

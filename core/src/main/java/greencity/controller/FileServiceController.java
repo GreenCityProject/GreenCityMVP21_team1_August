@@ -45,6 +45,6 @@ public class FileServiceController {
     })
     @PostMapping(path = "/image", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public ResponseEntity<String> uploadImage(@Parameter(description = "Image") @ImageValidation MultipartFile image) {
-        return ResponseEntity.status(HttpStatus.OK).body(fileService.upload(image));
+        return ResponseEntity.status(HttpStatus.OK).body(this.fileService.upload(image));
     }
 }

@@ -55,7 +55,7 @@ public class ShoppingListItemController {
         @Parameter(hidden = true) @ValidLanguage Locale locale) {
         return ResponseEntity
             .status(HttpStatus.CREATED)
-            .body(shoppingListItemService.saveUserShoppingListItems(user.getId(), habitId, dto, locale.getLanguage()));
+            .body(this.shoppingListItemService.saveUserShoppingListItems(user.getId(), habitId, dto, locale.getLanguage()));
     }
 
     /**
@@ -80,7 +80,7 @@ public class ShoppingListItemController {
                 "Id of the Habit that belongs to current user. Cannot be empty.") @PathVariable Long habitId,
         @Parameter(hidden = true) @ValidLanguage Locale locale) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(shoppingListItemService.getUserShoppingList(user.getId(), habitId, locale.getLanguage()));
+            .body(this.shoppingListItemService.getUserShoppingList(user.getId(), habitId, locale.getLanguage()));
     }
 
     /**
@@ -100,8 +100,10 @@ public class ShoppingListItemController {
     @DeleteMapping
     public void delete(
         @Parameter(hidden = true) @CurrentUser UserVO user, Long habitId, Long shoppingListItemId) {
-        shoppingListItemService.deleteUserShoppingListItemByItemIdAndUserIdAndHabitId(shoppingListItemId, user.getId(),
-            habitId);
+        this.shoppingListItemService.deleteUserShoppingListItemByItemIdAndUserIdAndHabitId(
+                shoppingListItemId,
+                user.getId(),
+                habitId);
     }
 
     /**
@@ -126,7 +128,7 @@ public class ShoppingListItemController {
         @Parameter(hidden = true) @ValidLanguage Locale locale) {
         return ResponseEntity
             .status(HttpStatus.CREATED)
-            .body(shoppingListItemService.updateUserShopingListItemStatus(user.getId(), userShoppingListItemId,
+            .body(this.shoppingListItemService.updateUserShopingListItemStatus(user.getId(), userShoppingListItemId,
                 locale.getLanguage()));
     }
 
@@ -153,7 +155,7 @@ public class ShoppingListItemController {
             + " Cannot be empty.") @PathVariable(value = "userShoppingListItemId") Long userShoppingListItemId,
         @PathVariable(value = "status") String status,
         @Parameter(hidden = true) @ValidLanguage Locale locale) {
-        return ResponseEntity.status(HttpStatus.OK).body(shoppingListItemService
+        return ResponseEntity.status(HttpStatus.OK).body(this.shoppingListItemService
             .updateUserShoppingListItemStatus(user.getId(), userShoppingListItemId, locale.getLanguage(), status));
     }
 
@@ -178,7 +180,7 @@ public class ShoppingListItemController {
         @Pattern(regexp = "^\\d+(,\\d+)++$",
             message = ValidationConstants.BAD_COMMA_SEPARATED_NUMBERS) @RequestParam String ids,
         @Parameter(hidden = true) @CurrentUser UserVO user) {
-        return ResponseEntity.status(HttpStatus.OK).body(shoppingListItemService
+        return ResponseEntity.status(HttpStatus.OK).body(this.shoppingListItemService
             .deleteUserShoppingListItems(ids));
     }
 
@@ -199,6 +201,6 @@ public class ShoppingListItemController {
     public ResponseEntity<List<ShoppingListItemDto>> findInProgressByUserId(
         @PathVariable @CurrentUserId Long userId, @RequestParam(name = "lang") String code) {
         return ResponseEntity.status(HttpStatus.OK)
-            .body(shoppingListItemService.findInProgressByUserIdAndLanguageCode(userId, code));
+            .body(this.shoppingListItemService.findInProgressByUserIdAndLanguageCode(userId, code));
     }
 }

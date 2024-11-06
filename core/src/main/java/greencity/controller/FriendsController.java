@@ -40,7 +40,7 @@ public class FriendsController {
     public void addFriend(
             @Parameter(hidden = true) @CurrentUser UserVO currentUser,
             @Parameter(description = "Friend ID") @PathVariable Long friendId) {
-        userService.addFriend(currentUser.getId(), friendId);
+        this.userService.addFriend(currentUser.getId(), friendId);
     }
 
     @Operation(summary = "Accept friendship invitation.")
@@ -54,7 +54,7 @@ public class FriendsController {
     public void acceptFriendshipInvitation(
             @Parameter(hidden = true) @CurrentUser UserVO currentUser,
             @Parameter(description = "Friend ID") @PathVariable Long friendId){
-        userService.acceptFriendshipInvitation(currentUser.getId(), friendId);
+        this.userService.acceptFriendshipInvitation(currentUser.getId(), friendId);
     }
 
     @Operation(summary = "Cancel friendship invitation.")
@@ -67,7 +67,7 @@ public class FriendsController {
     @DeleteMapping("/{friendId}/cancelFriend")
     public void cancelFriendshipInvitation(@Parameter(hidden = true) @CurrentUser UserVO currentUser,
                                            @Parameter(description = "Friend ID")@PathVariable Long friendId) {
-        userService.cancelFriendshipInvitation(currentUser.getId(), friendId);
+        this.userService.cancelFriendshipInvitation(currentUser.getId(), friendId);
     }
 
     @Operation(summary = "Decline friendship invitation.")
@@ -80,7 +80,7 @@ public class FriendsController {
     @DeleteMapping("/{friendId}/declineFriend")
     public void declineFriendshipInvitation(@Parameter(hidden = true) @CurrentUser UserVO currentUser,
                                             @Parameter(description = "Friend ID") @PathVariable Long friendId) {
-        userService.declineFriendshipInvitation(currentUser.getId(), friendId);
+        this.userService.declineFriendshipInvitation(currentUser.getId(), friendId);
     }
 
     @Operation(summary = "Delete friend.")
@@ -93,7 +93,7 @@ public class FriendsController {
     @DeleteMapping("/{friendId}")
     public void deleteFriend(@Parameter(hidden = true) @CurrentUser UserVO currentUser,
                              @Parameter(description = "Friend ID") @PathVariable Long friendId) {
-        userService.deleteFriend(currentUser.getId(), friendId);
+        this.userService.deleteFriend(currentUser.getId(), friendId);
     }
 
     @Operation(summary = "Get all friendship requests.")
@@ -108,7 +108,8 @@ public class FriendsController {
     public ResponseEntity<PageableAdvancedDto<FriendCardDtoResponse>> getFriendsRequests(
             @Parameter(hidden = true) @CurrentUser UserVO currentUser,
             @Parameter(description = "Pageable.") Pageable pageable) {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.getFriendshipRequests(currentUser.getId(), pageable));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(this.userService.getFriendshipRequests(currentUser.getId(), pageable));
     }
 
     @Operation(summary = "Get all friends.")
@@ -144,6 +145,7 @@ public class FriendsController {
             @RequestParam(required = false) String city,
             @Parameter(description = "Pageable.") Pageable pageable)
     {
-        return ResponseEntity.status(HttpStatus.OK).body(searchService.searchNotFriendsYet(currentUser.getId(), name, city, pageable));
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(this.searchService.searchNotFriendsYet(currentUser.getId(), name, city, pageable));
     }
 }

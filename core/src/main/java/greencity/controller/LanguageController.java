@@ -32,6 +32,6 @@ public class LanguageController {
     @GetMapping("")
     public ResponseEntity<List<String>> getAllLanguageCodes() {
         return ResponseEntity.status(HttpStatus.OK).body(
-                languageService.findAllLanguageCodes());
+                this.languageService.findAllLanguageCodes());
     }
 }
